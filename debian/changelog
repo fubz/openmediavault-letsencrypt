@@ -1,0 +1,5 @@
+openmediavault-letsencrypt (2.0) stable; urgency=low
+
+  * Initial release
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Sat, 14 Feb 2015 15:28:13 +0100
