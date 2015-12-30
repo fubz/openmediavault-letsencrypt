@@ -5,6 +5,8 @@ set -e
 . /etc/default/openmediavault
 . /usr/share/openmediavault/scripts/helper-functions
 
+PROGRAM="/opt/letsencrypt"
+
 case "$1" in
     configure)
         SERVICE_XPATH_NAME="letsencrypt"
@@ -14,6 +16,20 @@ case "$1" in
             omv_config_add_element "/config/services" "${SERVICE_XPATH_NAME}"
             omv_config_add_element "${SERVICE_XPATH}" "enable" "0"
         fi
+
+        echo "Removing old letsencrypt files..."
+		if [ -e ${PROGRAM} ]; then
+			rm -Rf ${PROGRAM}
+			echo "...ok"
+		fi
+
+        #echo "Install GIT..."
+        #apt-get install git
+
+        echo "Clone the LetsEncrypt repository"
+		git clone https://github.com/letsencrypt/letsencrypt.git ${PROGRAM}
+
+		sh ${PROGRAM}/bootstrap/install-deps.sh
 
         # Activate package triggers. These triggers are only set during the
         # package installation.

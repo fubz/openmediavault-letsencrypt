@@ -21,34 +21,64 @@
 Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
     extend: "OMV.workspace.form.Panel",
 
+	requires: [
+		"OMV.Rpc",
+		"OMV.window.Execute"
+	],
+	
     rpcService: "LetsEncrypt",
     rpcGetMethod: "getSettings",
     rpcSetMethod: "setSettings",
 
+    getButtonItems: function() {
+        var items = this.callParent(arguments);
+
+        items.push({
+            id: this.getId() + "-generate",
+            xtype: "button",
+            text: _("Generate Certificate"),
+            icon: "images/wrench.png",
+            iconCls: Ext.baseCSSPrefix + "btn-icon-16x16",
+            scope: this,
+            handler: Ext.Function.bind(this.onGenerateButton, this)
+        });
+
+        return items;
+    },
+
     getFormItems: function() {
         return [{
-            xtype: "fieldset",
-            title: _("LetsEncrypt settings"),
-            defaults: {
-                labelSeparator: ""
-            },
-            items: [{
-                xtype: "checkbox",
-                name: "enable",
-                fieldLabel: _("Enable"),
-                checked: false
-            },{
-				xtype: "textfield",
-				name: "domain",
-				fieldLabel: _("Domain"),
-				allowBlank: false,
-				value: location.hostname
-				plugins: [{
-					ptype: "fieldinfo",
-					text: _("Domain that points to your server, e.g example.org, sub.afraid.org")
+				xtype: "fieldset",
+				title: _("LetsEncrypt settings"),
+				defaults: {
+					labelSeparator: ""
+				},
+				items: [{
+					xtype: "checkbox",
+					name: "enable",
+					fieldLabel: _("Enable"),
+					checked: false
+				},{
+					xtype: "textfield",
+					name: "domain",
+					fieldLabel: _("Domain"),
+					allowBlank: false,
+					plugins: [{
+						ptype: "fieldinfo",
+						text: _("Domain the certificate will be generated for and must point to this server, e.g example.org, sub.afraid.org")
+					}]
+				},{
+					xtype: "textfield",
+					name: "email",
+					fieldLabel: _("Email"),
+					allowBlank: false,
+					vtype: "email",
+					plugins: [{
+						ptype: "fieldinfo",
+						text: _("Required for registration with LetsEncrypt.org.  This email address can be used to recover lost certificates.")
+					}]
 				}]
-			}]
-        },{
+			},{
 			xtype: "fieldset",
 			title: _("Certificate Comment"),
 			defaults: {
@@ -58,8 +88,7 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 				xtype: "textfield",
 				name: "cn",
 				fieldLabel: _("Common Name"),
-				allowBlank: false,
-				value: location.hostname
+				allowBlank: false
 			},{
 				xtype: "textfield",
 				name: "o",
@@ -85,14 +114,42 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 				name: "c",
 				fieldLabel: _("Country"),
 				allowBlank: true
-			},{
-				xtype: "textfield",
-				name: "email",
-				fieldLabel: _("Email"),
-				allowBlank: true
-				vtype: "email"
-			}];
+			}]
+	    }
+        //    ,{
+        //    xtype: "fieldset",
+        //    title: _("Certificate Generation"),
+        //    defaults: {
+        //        labelSeparator: ""
+        //    },
+        //    items: [{
+        //        xtype   : "button",
+        //        name    : "generate",
+        //        text    : _("Generate Certificate"),
+        //        scope   : this,
+        //        handler : Ext.Function.bind(me.onGenerateButton, this),
+        //        margin  : "5 0 0 0"
+        //    }]
+        //}
+        ];
+	},
+
+    onGenerateButton: function() {
+        var me = this;
+        me.doSubmit();
+        Ext.create("OMV.window.Execute", {
+            title      : _("Generate"),
+            rpcService : "LetsEncrypt",
+            rpcMethod  : "generateCertificate",
+            listeners  : {
+                scope     : me,
+                exception : function(wnd, error) {
+                    OMV.MessageBox.error(null, error);
+                }
+            }
+        }).show();
     }
+
 });
 
 OMV.WorkspaceManager.registerPanel({
