@@ -22,5 +22,5 @@ OMV.WorkspaceManager.registerNode({
     path: "/service",
     text: _("LetsEncrypt"),
     icon16: "images/letsencrypt.png",
-    iconSvg: "images/letsencrypt.svg"
+    iconSvg: "images/letsencrypt_grey.svg"
 });

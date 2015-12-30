@@ -29,7 +29,7 @@ case "$1" in
         echo "Clone the LetsEncrypt repository"
 		git clone https://github.com/letsencrypt/letsencrypt.git ${PROGRAM}
 
-		sh ${PROGRAM}/bootstrap/install-deps.sh
+		#sh ${PROGRAM}/bootstrap/install-deps.sh
 
         # Activate package triggers. These triggers are only set during the
         # package installation.
@@ -38,6 +38,11 @@ case "$1" in
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
+        echo "Removing old letsencrypt files..."
+		if [ -e ${PROGRAM} ]; then
+			rm -Rf ${PROGRAM}
+			echo "...ok"
+		fi
     ;;
 
     *)

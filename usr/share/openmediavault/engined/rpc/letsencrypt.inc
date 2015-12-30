@@ -270,16 +270,14 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
         // Child process.
         try {
             $bgOutputFilename = $this->createBgProcOutput();
-            $this->updateBgProcStatus($bgStatusFilename, "letsencryptout", $bgOutputFilename);
+            $this->updateBgProcStatus($bgStatusFilename, "outputfilename", $bgOutputFilename);
 
-
-            //$cmd = sprintf("export LANG=C; service nginx stop && sh /opt/letsencrypt/letsencrypt-auto certonly --standalone --text --keep-until-expiring --agree-tos --email \"%s\" -d \"%s\" > /home/fubz/test.txt && service nginx start",
-            $cmd = sprintf("sh /opt/letsencrypt/letsencrypt-auto certonly --webroot -w /var/www/openmediavault/ --text --keep-until-expiring --agree-tos --email \"%s\" -d \"%s\" > /home/fubz/test.txt",
+            $cmd = sprintf("sh /opt/letsencrypt/letsencrypt-auto certonly --webroot -w /var/www/openmediavault/ --text --keep-until-expiring --agree-tos --email \"%s\" -d \"%s\" 2>&1",
                 $params['email'], $params['domain']);
 
             $this->exec($cmd, $output, $bgOutputFilename);
-            $this->finalizeBgProcStatus($bgStatusFilename, $output);
-
+            $exception = "Success";
+            $this->finalizeBgProcStatus($bgStatusFilename, $output, $exception);
 
             // Read certificate and key content
             $keydata = file_get_contents(sprintf("/etc/letsencrypt/live/%s/privkey.pem", $params['domain']));

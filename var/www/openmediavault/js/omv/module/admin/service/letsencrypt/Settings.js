@@ -57,7 +57,11 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 					xtype: "checkbox",
 					name: "enable",
 					fieldLabel: _("Enable"),
-					checked: false
+					checked: false,
+                    plugins: [{
+                        ptype: "fieldinfo",
+                        text: _("Enable monthly update of certificate.")
+                    }]
 				},{
 					xtype: "textfield",
 					name: "domain",
@@ -88,7 +92,11 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 				xtype: "textfield",
 				name: "cn",
 				fieldLabel: _("Common Name"),
-				allowBlank: false
+				allowBlank: false,
+				plugins: [{
+					ptype: "fieldinfo",
+					text: _("Fill in with your domain name.")
+				}]
 			},{
 				xtype: "textfield",
 				name: "o",
@@ -137,17 +145,27 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
     onGenerateButton: function() {
         var me = this;
         me.doSubmit();
-        Ext.create("OMV.window.Execute", {
-            title      : _("Generate"),
-            rpcService : "LetsEncrypt",
-            rpcMethod  : "generateCertificate",
-            listeners  : {
+        var wnd = Ext.create("OMV.window.Execute", {
+            title      			: _("Generate"),
+            rpcService 			: "LetsEncrypt",
+            rpcMethod  			: "generateCertificate",
+			rpcIgnoreErrors 	: true,
+			hideStartButton 	: true,
+			hideStopButton  	: true,
+			listeners  			: {
                 scope     : me,
-                exception : function(wnd, error) {
+				finish    : function(wnd, response) {
+					wnd.appendValue(_("Done..."));
+					wnd.setButtonDisabled("close", false);
+				},
+				exception : function(wnd, error) {
                     OMV.MessageBox.error(null, error);
                 }
             }
-        }).show();
+        });
+		wnd.setButtonDisabled("close", true);
+		wnd.show();
+		wnd.start();
     }
 
 });
