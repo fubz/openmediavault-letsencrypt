@@ -10,5 +10,6 @@ Package: openmediavault-letsencrypt
 Architecture: all
 Depends: openmediavault (>= 2.1),
          ${misc:Depends}
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
+Description: Generate free and valid SSL certificates for OMV
+ Let's Encrypt allows you to to automatically generate free SSL certificates that you can use to secure server.
+ Visit https://letsencrypt.org for more information on the project.

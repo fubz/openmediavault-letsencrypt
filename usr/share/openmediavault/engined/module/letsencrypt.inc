@@ -24,7 +24,6 @@ require_once "openmediavault/module.inc";
 require_once "openmediavault/notify.inc";
 
 class OMVModuleLetsEncrypt extends OMVModuleServiceAbstract implements
-    OMVIModuleServiceStatus,
     OMVINotifyListener
 {
     /**
@@ -129,7 +128,7 @@ class OMVModuleLetsEncrypt extends OMVModuleServiceAbstract implements
         }
 
         $initd = new OMVSysVInitScript($this->getName(), true);
-        $initd->exec();
+        //$initd->exec();
     }
 
     /**
@@ -140,7 +139,7 @@ class OMVModuleLetsEncrypt extends OMVModuleServiceAbstract implements
     public function stopService()
     {
         $initd = new OMVSysVInitScript($this->getName());
-        $initd->exec();
+        //$initd->exec();
     }
 
     /**
