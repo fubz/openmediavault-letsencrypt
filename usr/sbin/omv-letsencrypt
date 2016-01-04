@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# get basic info
+. /etc/default/openmediavault
+
+# needed for omv_config_get command
+. /usr/share/openmediavault/scripts/helper-functions
+
+if ! omv_config_exists "/config/services/letsencrypt/domain"; then
+    echo "Please configure the LetsEncrypt domain through the WebUI first"
+    exit 1
+fi
+
+if ! omv_config_exists "/config/services/letsencrypt/email"; then
+    echo "Please configure the LetsEncrypt email through the WebUI first"
+    exit 1
+fi
+
+function json_escape(){
+  echo -n "$1" | python -c 'import json,sys; print json.dumps(sys.stdin.read())'
+}
+
+#Get existing configuration
+certuuid=$(omv_config_get "/config/services/letsencrypt/certuuid")
+domain=$(omv_config_get "/config/services/letsencrypt/domain")
+email=$(omv_config_get "/config/services/letsencrypt/email")
+comment=$(omv_config_get "/config/services/letsencrypt/comment")
+live_dir="/etc/letsencrypt/live"
+
+#Basic check for existing configuration, if not there exit script
+if ! omv_isuuid ${certuuid}; then
+    echo "Existing certificate uuid is invalid"
+    exit 1
+fi
+
+echo "Generating New Certificates"
+
+#set live dir to the proper domain
+live_dir="$live_dir/$domain/"
+echo $live_dir
+echo $certuuid
+
+sh /opt/letsencrypt/letsencrypt-auto certonly --webroot -w /var/www/openmediavault/ --text --keep-until-expiring --agree-tos --email "$email" -d "$domain"
+
+#Read in the new certificates
+certkey=`cat $live_dir/fullchain.pem`
+certkey=$(json_escape "${certkey}")
+
+privkey=`cat $live_dir/privkey.pem`
+privkey=$(json_escape "${privkey}")
+
+#Use the existing certuuid
+rpcparams={"\"uuid\":\"$certuuid\", \"certificate\":${certkey}, \"privatekey\":${privkey}, \"comment\":\"$comment\""}
+
+#This call will be invalid for some reason; however it calls, omv-rpc, so I will just go with that
+#omv_exec_rpc "CertificateMgmt" "set" "${rpcparams}"
+
+omv-rpc "CertificateMgmt" "set" "${rpcparams}"
+
+
+echo "Applying Configuration Changes"
+omv_exec_rpc "Config" "applyChanges" "{\"modules\":[\"certificatemgmt\"],\"force\":false}"
+omv_exec_rpc "Config" "applyChanges" "{\"modules\":[\"letsencrypt\"],\"force\":false}"
+
+
+

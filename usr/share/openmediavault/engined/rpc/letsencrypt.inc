@@ -19,6 +19,7 @@
 
 require_once "openmediavault/error.inc";
 require_once "openmediavault/notify.inc";
+require_once "openmediavault/functions.inc";
 require_once "openmediavault/rpcservice.inc";
 
 class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
@@ -153,29 +154,6 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
             }'
         );
 
-        //Do Work here!
-
-
-
-
-
-        //NO BACKGROUND
-//        $cmd = sprintf("export LANG=C; sh /opt/letsencrypt/letsencrypt-auto certonly --standalone --text --keep-until-expiring --agree-tos --email \"%s\" -d \"%s\" > /home/fubz/test.txt",
-//            $params['email'], $params['domain']);
-//        $cmd .= " 2>&1";
-//        if (0 !== $this->exec($cmd, $output)) {
-//            throw new OMVException(OMVErrorMsg::E_EXEC_FAILED,
-//                $cmd, implode("\n", $output));
-//        }
-        //END NO BACKGROUND
-
-
-
-
-
-
-
-
         // Prepare the configuration data.
         $object = array(
             "enable" => boolval($params["enable"]),
@@ -196,6 +174,20 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
                 $this->getXpath()
             );
         }
+
+        #If 'enable' is set, a cron job is required
+        //Get reference to the Certificate RPC
+//        $rpcServiceMgr = &OMVRpcServiceMgr::getInstance();
+//        $rpcService = $rpcServiceMgr->getService("cron");
+
+
+
+
+
+
+
+
+
 
         // Notify configuration changes.
         $dispatcher = &OMVNotifyDispatcher::getInstance();
@@ -219,11 +211,13 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
 
         // Check if the module is marked as dirty. This is an indication
         // that configuration has not been saved
-        if ($this->isModuleDirty("certificatemgmt"))
+        if ($this->isModuleDirty("letsencrypt"))
             throw new OMVException(OMVErrorMsg::E_CONFIG_DIRTY);
 
         // Get the configuration object.
         $params = $xmlConfig->get($this->getXpath());
+
+        $orginal_cn = $params['cn'];
 
         //From rpc/certificatemgmt.inc
         // Generate the certificate subject string.
@@ -275,18 +269,29 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
             $cmd = sprintf("sh /opt/letsencrypt/letsencrypt-auto certonly --webroot -w /var/www/openmediavault/ --text --keep-until-expiring --agree-tos --email \"%s\" -d \"%s\" 2>&1",
                 $params['email'], $params['domain']);
 
-            $this->exec($cmd, $output, $bgOutputFilename);
-            $exception = "Success";
-            $this->finalizeBgProcStatus($bgStatusFilename, $output, $exception);
+            if (0 !== $this->exec($cmd, $output, $bgOutputFilename)) {
+                throw new OMVException(OMVErrorMsg::E_EXEC_FAILED,
+                    $cmd, implode("\n", $output));
+            }
+            //$exception = "Success";
+            $this->finalizeBgProcStatus($bgStatusFilename, $output); //$exception
+
+            //Get reference to the Certificate RPC
+            $rpcServiceMgr = &OMVRpcServiceMgr::getInstance();
+            $rpcService = $rpcServiceMgr->getService("CertificateMgmt");
+
+            if (is_uuid($params['certuuid'])) {
+                // Delete the old certificate to avoid duplicates
+                $return = $rpcService->callMethod("delete", array(
+                    "uuid" => $params['certuuid']
+                ), $context);
+            }
 
             // Read certificate and key content
             $keydata = file_get_contents(sprintf("/etc/letsencrypt/live/%s/privkey.pem", $params['domain']));
             $crtdata = file_get_contents(sprintf("/etc/letsencrypt/live/%s/fullchain.pem", $params['domain']));
 
             // Finally import generated certificate.
-            $rpcServiceMgr = &OMVRpcServiceMgr::getInstance();
-            $rpcService = $rpcServiceMgr->getService("CertificateMgmt");
-
             $return = $rpcService->callMethod("set", array(
                 "uuid" => $GLOBALS['OMV_UUID_UNDEFINED'],
                 "certificate" => $crtdata,
@@ -295,15 +300,29 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
             ), $context);
 
 
-            //$log = sprintf("[%s] omv-snapraid-gui: INFO: %s - Finished\r\n", date("Y-m-d H:i:s"), strtoupper($params['command']));
-            //file_put_contents($this->getLogFile(), $log, FILE_APPEND);
+            //Resave the configuration data now with a new cert uuid
+            $object = array(
+                "enable" => boolval($params["enable"]),
+                "domain" => $params['domain'],
+                "email" => $params['email'],
+                "cn" => $orginal_cn,
+                "ou" => $params['ou'],
+                "o" => $params['o'],
+                "l" => $params['l'],
+                "st" => $params['st'],
+                "c" => $params['c'],
+                "certuuid" => $return['uuid']
+            );
+
+            $xmlConfig->replace($this->getXpath(), $object);
+
             exit(0);
         } catch(Exception $e) {
             $this->finalizeBgProcStatus($bgStatusFilename, "", $e);
-            //$log = sprintf("[%s] omv-snapraid-gui: ERROR: %s - Error!\r\n", date("Y-m-d H:i:s"), strtoupper($params['command']));
-            //file_put_contents($this->getLogFile(), $log, FILE_APPEND);
             exit(1);
         }
+
+
 
     }
 
