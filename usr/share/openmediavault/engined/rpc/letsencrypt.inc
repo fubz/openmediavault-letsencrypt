@@ -112,8 +112,8 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
         $settingsObject["l"] = $object["l"];
         $settingsObject["st"] = $object["st"];
         $settingsObject["c"] = $object["c"];
-
-
+        $settingsObject["certuuid"] = $object["certuuid"];
+        $settingsObject["cron_uuid"] = $object["cron_uuid"];
 
         return $settingsObject;
     }
@@ -149,10 +149,54 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
                     "o":{"type":"string"},
                     "ou":{"type":"string"},
                     "cn":{"type":"string","minLength":1},
-                    "email":{'.$GLOBALS['OMV_JSONSCHEMA_EMAIL'].'}
+                    "email":{'.$GLOBALS['OMV_JSONSCHEMA_EMAIL'].'},
+                    "certuuid":{"type":"string"},
+                    "cron_uuid":{"type":"string"}
                 }
             }'
         );
+
+
+
+        #If 'enable' is set, a cron job is required
+        //Get reference to the Certificate RPC
+        $rpcServiceMgr = &OMVRpcServiceMgr::getInstance();
+        $rpcService = $rpcServiceMgr->getService("cron");
+
+        if($params['enable'] && false == is_uuid($params['cron_uuid'])) {
+            $cron_minute=rand(0, 59);
+            $cron_hour=rand(0, 23);
+
+            // Finally import generated certificate.
+            $return = $rpcService->callMethod("set", array(
+                "uuid"          => $GLOBALS['OMV_UUID_UNDEFINED'],
+                "enable"        => true,
+                "execution"     => "monthly",
+                "sendemail"     => false,
+                "type"          => "userdefined",
+                "minute"        => strval($cron_minute),
+                "everynminute"  => false,
+                "hour"          => strval($cron_hour),
+                "everynhour"    => false,
+                "dayofmonth"    => "*",
+                "everyndayofmonth" => false,
+                "month"         => "*",
+                "dayofweek"     => "*",
+                "username"      => "root",
+                "command"       => "omv-letsencrypt",
+                "comment"       => "Keeps certificate generate by Lets Encrypt plugin up to date.  Do not delete here, disable from Lets Encrypt plugin."
+            ), $context);
+
+            $params['cron_uuid'] = $return['uuid'];
+        } else if (false == $params['enable'] && is_uuid($params['cron_uuid'])  ) {
+            // Finally import generated certificate.
+            $return = $rpcService->callMethod("delete", array(
+                "uuid"          => $params['cron_uuid']
+            ), $context);
+
+            $params['cron_uuid'] = "";
+        }
+
 
         // Prepare the configuration data.
         $object = array(
@@ -164,7 +208,9 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
             "o" => $params['o'],
             "l" => $params['l'],
             "st" => $params['st'],
-            "c" => $params['c']
+            "c" => $params['c'],
+            "certuuid" => $params['certuuid'],
+            "cron_uuid" => $params['cron_uuid']
         );
 
         // Set the configuration object.
@@ -174,20 +220,6 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
                 $this->getXpath()
             );
         }
-
-        #If 'enable' is set, a cron job is required
-        //Get reference to the Certificate RPC
-//        $rpcServiceMgr = &OMVRpcServiceMgr::getInstance();
-//        $rpcService = $rpcServiceMgr->getService("cron");
-
-
-
-
-
-
-
-
-
 
         // Notify configuration changes.
         $dispatcher = &OMVNotifyDispatcher::getInstance();

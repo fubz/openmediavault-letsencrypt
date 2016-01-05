@@ -22,10 +22,6 @@ function json_escape(){
 
 #Get existing configuration
 certuuid=$(omv_config_get "/config/services/letsencrypt/certuuid")
-domain=$(omv_config_get "/config/services/letsencrypt/domain")
-email=$(omv_config_get "/config/services/letsencrypt/email")
-comment=$(omv_config_get "/config/services/letsencrypt/comment")
-live_dir="/etc/letsencrypt/live"
 
 #Basic check for existing configuration, if not there exit script
 if ! omv_isuuid ${certuuid}; then
@@ -33,12 +29,16 @@ if ! omv_isuuid ${certuuid}; then
     exit 1
 fi
 
+domain=$(omv_config_get "/config/services/letsencrypt/domain")
+email=$(omv_config_get "/config/services/letsencrypt/email")
+comment=$(omv_config_get "/config/system/certificates/sslcertificate[uuid/text()='${certuuid}']/comment")
+live_dir="/etc/letsencrypt/live"
+
 echo "Generating New Certificates"
 
 #set live dir to the proper domain
 live_dir="$live_dir/$domain/"
-echo $live_dir
-echo $certuuid
+echo "Getting certificates from ${live_dir}"
 
 sh /opt/letsencrypt/letsencrypt-auto certonly --webroot -w /var/www/openmediavault/ --text --keep-until-expiring --agree-tos --email "$email" -d "$domain"
 
@@ -50,7 +50,7 @@ privkey=`cat $live_dir/privkey.pem`
 privkey=$(json_escape "${privkey}")
 
 #Use the existing certuuid
-rpcparams={"\"uuid\":\"$certuuid\", \"certificate\":${certkey}, \"privatekey\":${privkey}, \"comment\":\"$comment\""}
+rpcparams={"\"uuid\":\"$certuuid\", \"certificate\":${certkey}, \"privatekey\":${privkey}, \"comment\":\"$comment\"${comment}"}
 
 #This call will be invalid for some reason; however it calls, omv-rpc, so I will just go with that
 #omv_exec_rpc "CertificateMgmt" "set" "${rpcparams}"

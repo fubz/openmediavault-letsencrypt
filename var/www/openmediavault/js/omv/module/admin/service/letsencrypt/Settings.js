@@ -60,7 +60,7 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 					checked: false,
                     plugins: [{
                         ptype: "fieldinfo",
-                        text: _("Enable monthly update of certificate.")
+                        text: _("Enable monthly update of certificate.  This will create an entry in Scheduled Jobs.")
                     }]
 				},{
 					xtype: "textfield",
@@ -81,6 +81,14 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 						ptype: "fieldinfo",
 						text: _("Required for registration with LetsEncrypt.org.  This email address can be used to recover lost certificates.")
 					}]
+				},{
+					xtype: "hiddenfield",
+					name: "cron_uuid"
+					//value: record.get("cron_uuid")
+				},{
+					xtype: "hiddenfield",
+					name: "certuuid"
+					//value: record.get("certuuid")
 				}]
 			},{
 			xtype: "fieldset",
