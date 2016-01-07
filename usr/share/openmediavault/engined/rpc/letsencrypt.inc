@@ -106,12 +106,6 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
 
         $settingsObject["enable"] = boolval($object["enable"]);
         $settingsObject["email"] = $object["email"];
-        $settingsObject["cn"] = $object["cn"];
-        $settingsObject["ou"] = $object["ou"];
-        $settingsObject["o"] = $object["o"];
-        $settingsObject["l"] = $object["l"];
-        $settingsObject["st"] = $object["st"];
-        $settingsObject["c"] = $object["c"];
         $settingsObject["certuuid"] = $object["certuuid"];
         $settingsObject["cron_uuid"] = $object["cron_uuid"];
 
@@ -143,12 +137,6 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
                 "properties": {
                     "enable": {"type": "boolean"},
                     "domain":{"type":"string","minLength":1},
-                    "c":{"type":"string","maxLength":2},
-                    "st":{"type":"string"},
-                    "l":{"type":"string"},
-                    "o":{"type":"string"},
-                    "ou":{"type":"string"},
-                    "cn":{"type":"string","minLength":1},
                     "email":{'.$GLOBALS['OMV_JSONSCHEMA_EMAIL'].'},
                     "certuuid":{"type":"string"},
                     "cron_uuid":{"type":"string"}
@@ -203,12 +191,6 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
             "enable" => boolval($params["enable"]),
             "domain" => $params['domain'],
             "email" => $params['email'],
-            "cn" => $params['cn'],
-            "ou" => $params['ou'],
-            "o" => $params['o'],
-            "l" => $params['l'],
-            "st" => $params['st'],
-            "c" => $params['c'],
             "certuuid" => $params['certuuid'],
             "cron_uuid" => $params['cron_uuid']
         );
@@ -248,39 +230,6 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
 
         // Get the configuration object.
         $params = $xmlConfig->get($this->getXpath());
-
-        $orginal_cn = $params['cn'];
-
-        //From rpc/certificatemgmt.inc
-        // Generate the certificate subject string.
-        $rdnfields = array("c", "st", "l", "o", "ou", "cn");
-        $subject = "";
-        foreach ($rdnfields as $rdnfieldk => $rdnfieldv) {
-            if (empty($params[$rdnfieldv]))
-                continue;
-            // Escape RDN attribute value, see
-            // http://www-03.ibm.com/systems/i/software/ldap/underdn.html
-            // http://msdn.microsoft.com/en-us/library/windows/desktop/aa366101(v=vs.85).aspx
-            $replace = array();
-            foreach (array(',','+','<','>',';','\r','=','#','/') as $v) {
-                $replace[$v] = sprintf("\\%s", strtoupper(str_pad(dechex(
-                    ord($v)), 2, "0")));
-            }
-            $params[$rdnfieldv] = strtr($params[$rdnfieldv], $replace);
-            $params[$rdnfieldv] = addcslashes($params[$rdnfieldv], '"\\');
-            // Append to subject.
-            switch ($rdnfieldv) {
-                case "cn":
-                    // Append the email address.
-                    if (!empty($params['email'])) {
-                        $params[$rdnfieldv] = sprintf("%s/emailAddress=%s",
-                            $params[$rdnfieldv], $params['email']);
-                    }
-                default:
-                    $subject .= sprintf("/%s=%s", strtoupper($rdnfieldv),
-                        $params[$rdnfieldv]);
-            }
-        }
 
 
         //Generate the letsencrypt certificates
@@ -328,7 +277,7 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
                 "uuid" => $GLOBALS['OMV_UUID_UNDEFINED'],
                 "certificate" => $crtdata,
                 "privatekey" => $keydata,
-                "comment" => !empty($subject) ? $subject : ""
+                "comment" => "LetsEncrypt"
             ), $context);
 
 
@@ -337,12 +286,6 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
                 "enable" => boolval($params["enable"]),
                 "domain" => $params['domain'],
                 "email" => $params['email'],
-                "cn" => $orginal_cn,
-                "ou" => $params['ou'],
-                "o" => $params['o'],
-                "l" => $params['l'],
-                "st" => $params['st'],
-                "c" => $params['c'],
                 "certuuid" => $return['uuid']
             );
 
@@ -354,61 +297,9 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
             exit(1);
         }
 
-
-
     }
 
-    /**
-     * Get statistics, e.g. who's online.
-     * @param params The method parameters.
-     * @param context The context of the caller.
-     * @return A string containing the requested statistics.
-     * @throw E_CONFIG_GET_OBJECT_FAILED
-     * @throw E_EXEC_FAILED
-     */
-    public function getStats($params, $context) {
-        global $xmlConfig;
-        // Validate the RPC caller context.
-        $this->validateMethodContext($context, array(
-            "role" => OMV_ROLE_ADMINISTRATOR
-        ));
-        // Is service enabled?
-        $xpath = "//services/letsencrypt";
-        $object = $xmlConfig->get($xpath);
-        if(is_null($object)) {
-            throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $xpath);
-        }
-        if (!boolvalEx($object['enable'])) {
-            $stats = gettext("Service disabled");
-        } else {
-            // Get users currently logged in.
-//            $stats = sprintf("%s:\n", gettext("Currently logged in users"));
-//            $cmd = "export LANG=C; who -u 2>&1";
-//            if(0 !== $this->exec($cmd, $output)) {
-//                throw new OMVException(OMVErrorMsg::E_EXEC_FAILED,
-//                    $cmd, implode("\n", $output));
-//            }
-//            $stats .= empty($output) ? gettext("No users connected") :
-//                implode("\n", $output);
-//            // Get connections.
-//            $cmd = sprintf("export LANG=C; lsof -n -s TCP:ESTABLISHED ".
-//                "-i :%d 2>&1 || true", $object['port']);
-//            if(0 !== $this->exec($cmd, $output)) {
-//                throw new OMVException(OMVErrorMsg::E_EXEC_FAILED,
-//                    $cmd, implode("\n", $output));
-//            }
-//            $stats .= sprintf("\n\n%s:\n", gettext("Connections"));
-//            $stats .= empty($output) ? gettext("No connections") :
-//                implode("\n", $output);
-            $stats = gettext("Hello world!");
-        }
-        return $stats;
-    }
-
-
-
-    }
+}
 
 // Register the RPC service.
 $rpcServiceMgr = &OMVRpcServiceMgr::getInstance();

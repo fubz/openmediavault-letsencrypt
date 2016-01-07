@@ -69,7 +69,7 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 					allowBlank: false,
 					plugins: [{
 						ptype: "fieldinfo",
-						text: _("Domain the certificate will be generated for and must point to this server, e.g example.org, sub.afraid.org")
+						text: _("Domain the certificate will be generated for and must point to this server, e.g example.org, sub.afraid.org.  Wildcard (*) domains are not supported.")
 					}]
 				},{
 					xtype: "textfield",
@@ -84,54 +84,22 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 				},{
 					xtype: "hiddenfield",
 					name: "cron_uuid"
-					//value: record.get("cron_uuid")
 				},{
 					xtype: "hiddenfield",
 					name: "certuuid"
-					//value: record.get("certuuid")
 				}]
 			},{
 			xtype: "fieldset",
-			title: _("Certificate Comment"),
+			title: _("Tips"),
 			defaults: {
 				labelSeparator: ""
 			},
 			items: [{
-				xtype: "textfield",
-				name: "cn",
-				fieldLabel: _("Common Name"),
-				allowBlank: false,
-				plugins: [{
-					ptype: "fieldinfo",
-					text: _("Fill in with your domain name.")
-				}]
-			},{
-				xtype: "textfield",
-				name: "o",
-				fieldLabel: _("Organization Name"),
-				allowBlank: true
-			},{
-				xtype: "textfield",
-				name: "ou",
-				fieldLabel: _("Organizational Unit"),
-				allowBlank: true
-			},{
-				xtype: "textfield",
-				name: "l",
-				fieldLabel: _("City"),
-				allowBlank: true
-			},{
-				xtype: "textfield",
-				name: "st",
-				fieldLabel: _("State/Province"),
-				allowBlank: true
-			},{
-				xtype: "textfield",
-				name: "c",
-				fieldLabel: _("Country"),
-				allowBlank: true
+				border: false,
+				html: "<h2>Server Setup</h2>" +
+					"<ul><li>Port <b>80</b> must be open for Let's Encrypt to verify your domain.</li></ul>"
 			}]
-	    }
+		}
         //    ,{
         //    xtype: "fieldset",
         //    title: _("Certificate Generation"),
