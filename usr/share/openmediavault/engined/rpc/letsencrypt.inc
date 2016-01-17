@@ -247,8 +247,13 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
             $bgOutputFilename = $this->createBgProcOutput();
             $this->updateBgProcStatus($bgStatusFilename, "outputfilename", $bgOutputFilename);
 
-            $cmd = sprintf("sh /opt/letsencrypt/letsencrypt-auto certonly --webroot -w /var/www/openmediavault/ --text --keep-until-expiring --agree-tos --email \"%s\" -d \"%s\" 2>&1",
-                $params['email'], $params['domain']);
+            $myDomains = explode(',', $params['domain']);
+            $domainList = "";
+            foreach($myDomains as $aDomain){
+                $domainList = $domainList." -d ".trim($aDomain);
+            }
+
+            $cmd = "sh /opt/letsencrypt/letsencrypt-auto certonly --webroot -w /var/www/openmediavault/ --text --keep-until-expiring --agree-tos --expand --email ".$params['email']." ".$domainList." 2>&1";
 
             if (0 !== $this->exec($cmd, $output, $bgOutputFilename)) {
                 throw new OMVException(OMVErrorMsg::E_EXEC_FAILED,
@@ -269,8 +274,8 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
             }
 
             // Read certificate and key content
-            $keydata = file_get_contents(sprintf("/etc/letsencrypt/live/%s/privkey.pem", $params['domain']));
-            $crtdata = file_get_contents(sprintf("/etc/letsencrypt/live/%s/fullchain.pem", $params['domain']));
+            $keydata = file_get_contents(sprintf("/etc/letsencrypt/live/%s/privkey.pem", $myDomains[0]));
+            $crtdata = file_get_contents(sprintf("/etc/letsencrypt/live/%s/fullchain.pem", $myDomains[0]));
 
             // Finally import generated certificate.
             $return = $rpcService->callMethod("set", array(

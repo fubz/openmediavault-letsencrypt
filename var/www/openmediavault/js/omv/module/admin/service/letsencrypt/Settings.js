@@ -69,7 +69,7 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 					allowBlank: false,
 					plugins: [{
 						ptype: "fieldinfo",
-						text: _("Domain the certificate will be generated for and must point to this server, e.g example.org, sub.afraid.org.  Wildcard (*) domains are not supported.")
+						text: _("Domains the certificate will be generated for and must point to this server, e.g example.org, sub.afraid.org.  Wildcard (*) domains are not supported.  Separate multiple (sub)domains with a comma (,)")
 					}]
 				},{
 					xtype: "textfield",

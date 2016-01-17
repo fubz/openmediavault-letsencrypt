@@ -7,12 +7,14 @@
 . /usr/share/openmediavault/scripts/helper-functions
 
 if ! omv_config_exists "/config/services/letsencrypt/domain"; then
-    echo "Please configure the LetsEncrypt domain through the WebUI first"
+    echo "Please configure the LetsEncrypt domain through the WebUI first."
+    echo "Use the Generate Certificate button in the plugin view at least once before using this script."
     exit 1
 fi
 
 if ! omv_config_exists "/config/services/letsencrypt/email"; then
     echo "Please configure the LetsEncrypt email through the WebUI first"
+    echo "Use the Generate Certificate button in the plugin view at least once before using this script."
     exit 1
 fi
 
@@ -26,10 +28,12 @@ certuuid=$(omv_config_get "/config/services/letsencrypt/certuuid")
 #Basic check for existing configuration, if not there exit script
 if ! omv_isuuid ${certuuid}; then
     echo "Existing certificate uuid is invalid"
+    echo "Use the Generate Certificate button in the plugin view at least once before using this script."
     exit 1
 fi
 
 domain=$(omv_config_get "/config/services/letsencrypt/domain")
+domain="${domain// }"
 email=$(omv_config_get "/config/services/letsencrypt/email")
 comment=$(omv_config_get "/config/system/certificates/sslcertificate[uuid/text()='${certuuid}']/comment")
 live_dir="/etc/letsencrypt/live"
@@ -37,10 +41,10 @@ live_dir="/etc/letsencrypt/live"
 echo "Generating New Certificates"
 
 #set live dir to the proper domain
-live_dir="$live_dir/$domain/"
+live_dir="$live_dir/${domain%%,*}/"
 echo "Getting certificates from ${live_dir}"
 
-sh /opt/letsencrypt/letsencrypt-auto certonly --webroot -w /var/www/openmediavault/ --text --keep-until-expiring --agree-tos --email "$email" -d "$domain"
+sh /opt/letsencrypt/letsencrypt-auto certonly --webroot -w /var/www/openmediavault/ --text --keep-until-expiring --agree-tos --expand --email ${email} -d ${domain//,/ -d }
 
 #Read in the new certificates
 certkey=`cat $live_dir/fullchain.pem`
