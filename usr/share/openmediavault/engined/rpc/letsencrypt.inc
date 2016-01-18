@@ -106,6 +106,7 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
 
         $settingsObject["enable"] = boolval($object["enable"]);
         $settingsObject["email"] = $object["email"];
+        $settingsObject["webroot"] = $object["webroot"];
         $settingsObject["certuuid"] = $object["certuuid"];
         $settingsObject["cron_uuid"] = $object["cron_uuid"];
 
@@ -138,6 +139,7 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
                     "enable": {"type": "boolean"},
                     "domain":{"type":"string","minLength":1},
                     "email":{'.$GLOBALS['OMV_JSONSCHEMA_EMAIL'].'},
+                    "webroot":{"type":"string","minLength":1},
                     "certuuid":{"type":"string"},
                     "cron_uuid":{"type":"string"}
                 }
@@ -191,6 +193,7 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
             "enable" => boolval($params["enable"]),
             "domain" => $params['domain'],
             "email" => $params['email'],
+            "webroot" => $params['webroot'],
             "certuuid" => $params['certuuid'],
             "cron_uuid" => $params['cron_uuid']
         );
@@ -253,7 +256,7 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
                 $domainList = $domainList." -d ".trim($aDomain);
             }
 
-            $cmd = "sh /opt/letsencrypt/letsencrypt-auto certonly --webroot -w /var/www/openmediavault/ --text --keep-until-expiring --agree-tos --expand --email ".$params['email']." ".$domainList." 2>&1";
+            $cmd = "sh /opt/letsencrypt/letsencrypt-auto certonly --webroot -w ".$params['webroot']." --text --keep-until-expiring --agree-tos --expand --email ".$params['email']." ".$domainList." 2>&1";
 
             if (0 !== $this->exec($cmd, $output, $bgOutputFilename)) {
                 throw new OMVException(OMVErrorMsg::E_EXEC_FAILED,
@@ -282,7 +285,7 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
                 "uuid" => $GLOBALS['OMV_UUID_UNDEFINED'],
                 "certificate" => $crtdata,
                 "privatekey" => $keydata,
-                "comment" => "LetsEncrypt"
+                "comment" => "LetsEncrypt - ".$myDomains[0]
             ), $context);
 
 
@@ -291,7 +294,9 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
                 "enable" => boolval($params["enable"]),
                 "domain" => $params['domain'],
                 "email" => $params['email'],
-                "certuuid" => $return['uuid']
+                "webroot" => $params['webroot'],
+                "certuuid" => $return['uuid'],
+                "cron_uuid" => $params['cron_uuid']
             );
 
             $xmlConfig->replace($this->getXpath(), $object);

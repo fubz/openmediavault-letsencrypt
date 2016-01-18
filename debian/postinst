@@ -15,6 +15,7 @@ case "$1" in
         if ! omv_config_exists "${SERVICE_XPATH}"; then
             omv_config_add_element "/config/services" "${SERVICE_XPATH_NAME}"
             omv_config_add_element "${SERVICE_XPATH}" "enable" "0"
+            omv_config_add_element "${SERVICE_XPATH}" "webroot" "/var/www/openmediavault/"
         fi
 
         echo "Removing old letsencrypt files..."
@@ -23,13 +24,12 @@ case "$1" in
 			echo "...ok"
 		fi
 
-        #echo "Install GIT..."
-        #apt-get install git
+        #pip install 'requests[security]'
+        pip install -U pip
+        pip install -U pyopenssl ndg-httpsclient pyasn1
 
         echo "Clone the LetsEncrypt repository"
 		git clone https://github.com/letsencrypt/letsencrypt.git ${PROGRAM}
-
-		#sh ${PROGRAM}/bootstrap/install-deps.sh
 
         # Activate package triggers. These triggers are only set during the
         # package installation.

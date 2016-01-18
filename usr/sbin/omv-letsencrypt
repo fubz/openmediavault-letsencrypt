@@ -35,6 +35,7 @@ fi
 domain=$(omv_config_get "/config/services/letsencrypt/domain")
 domain="${domain// }"
 email=$(omv_config_get "/config/services/letsencrypt/email")
+webroot=$(omv_config_get "/config/services/letsencrypt/webroot")
 comment=$(omv_config_get "/config/system/certificates/sslcertificate[uuid/text()='${certuuid}']/comment")
 live_dir="/etc/letsencrypt/live"
 
@@ -44,7 +45,7 @@ echo "Generating New Certificates"
 live_dir="$live_dir/${domain%%,*}/"
 echo "Getting certificates from ${live_dir}"
 
-sh /opt/letsencrypt/letsencrypt-auto certonly --webroot -w /var/www/openmediavault/ --text --keep-until-expiring --agree-tos --expand --email ${email} -d ${domain//,/ -d }
+sh /opt/letsencrypt/letsencrypt-auto certonly --webroot -w ${webroot} --text --keep-until-expiring --agree-tos --expand --email ${email} -d ${domain//,/ -d }
 
 #Read in the new certificates
 certkey=`cat $live_dir/fullchain.pem`

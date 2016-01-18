@@ -69,7 +69,7 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 					allowBlank: false,
 					plugins: [{
 						ptype: "fieldinfo",
-						text: _("Domains the certificate will be generated for and must point to this server, e.g example.org, sub.afraid.org.  Wildcard (*) domains are not supported.  Separate multiple (sub)domains with a comma (,)")
+						text: _("Domains the certificate will be generated for and must point to this server, e.g yourdomain.tld, sub.afraid.org.  Wildcard (*) domains are not supported.  Separate multiple (sub)domains with a comma (,)")
 					}]
 				},{
 					xtype: "textfield",
@@ -80,6 +80,15 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 					plugins: [{
 						ptype: "fieldinfo",
 						text: _("Required for registration with LetsEncrypt.org.  This email address can be used to recover lost certificates.")
+					}]
+				},{
+					xtype: "textfield",
+					name: "webroot",
+					fieldLabel: _("WebRoot"),
+					allowBlank: false,
+					plugins: [{
+						ptype: "fieldinfo",
+						text: _("The root directory of the files served by your internet facing webserver.")
 					}]
 				},{
 					xtype: "hiddenfield",
@@ -96,8 +105,13 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 			},
 			items: [{
 				border: false,
-				html: "<h2>Server Setup</h2>" +
-					"<ul><li>Port <b>80</b> must be open for Let's Encrypt to verify your domain.</li></ul>"
+				html: "<br><ul><li>Plugin uses <a href='https://letsencrypt.readthedocs.org/en/latest/using.html#webroot'>the webroot installation</a> method provided by Let's Encrypt.</li>" +
+                    "<li>OMV configuration needs to be applied after generating certificate due to the plugin adding entries to certificates and scheduled jobs." +
+                    "</li>" +
+					"<h2>Server Setup</h2>" +
+					"<ul><li>Port <b>80</b> must be open for Let's Encrypt to verify your domain.</li>" +
+                    "<li>Since the plugin only supports one webroot, use a reverse proxy to direct all of Let's Encrypt validation calls to yourdomain.tld/.well-known/acme-challenge/* to your configured webroot.</li>" +
+                    "</ul>"
 			}]
 		}
         //    ,{
