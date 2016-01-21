@@ -25,8 +25,8 @@ case "$1" in
 		fi
 
         #pip install 'requests[security]'
-        pip install -U pip
-        pip install -U pyopenssl ndg-httpsclient pyasn1
+#        pip install -U pip
+#        pip install -U pyopenssl ndg-httpsclient pyasn1
 
         echo "Clone the LetsEncrypt repository"
 		git clone https://github.com/letsencrypt/letsencrypt.git ${PROGRAM}
@@ -35,6 +35,8 @@ case "$1" in
         # package installation.
         dpkg-trigger update-fixperms
         dpkg-trigger update-locale
+
+
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
