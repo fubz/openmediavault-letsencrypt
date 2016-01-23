@@ -105,6 +105,7 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
         }
 
         $settingsObject["enable"] = boolval($object["enable"]);
+        $settingsObject["test_cert"] = boolval($object["test_cert"]);
         $settingsObject["email"] = $object["email"];
         $settingsObject["webroot"] = $object["webroot"];
         $settingsObject["certuuid"] = $object["certuuid"];
@@ -137,6 +138,7 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
                 "type": "object",
                 "properties": {
                     "enable": {"type": "boolean"},
+                    "test_cert": {"type": "boolean"},
                     "domain":{"type":"string","minLength":1},
                     "email":{'.$GLOBALS['OMV_JSONSCHEMA_EMAIL'].'},
                     "webroot":{"type":"string","minLength":1},
@@ -153,7 +155,7 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
         $rpcServiceMgr = &OMVRpcServiceMgr::getInstance();
         $rpcService = $rpcServiceMgr->getService("cron");
 
-        if($params['enable'] && false == is_uuid($params['cron_uuid'])) {
+        if($params['enable'] && false == is_uuid($params['cron_uuid'] && false == $params['test_cert'])) {
             $cron_minute=rand(0, 59);
             $cron_hour=rand(0, 23);
 
@@ -191,6 +193,7 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
         // Prepare the configuration data.
         $object = array(
             "enable" => boolval($params["enable"]),
+            "test_cert" => boolval($params["test_cert"]),
             "domain" => $params['domain'],
             "email" => $params['email'],
             "webroot" => $params['webroot'],
@@ -250,13 +253,20 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
             $bgOutputFilename = $this->createBgProcOutput();
             $this->updateBgProcStatus($bgStatusFilename, "outputfilename", $bgOutputFilename);
 
+            //Generate test parameter
+            $testCert = "";
+            if ($params['test_cert']) {
+                $testCert = "--test-cert " ;
+            }
+
+            //Generate domain parameters
             $myDomains = explode(',', $params['domain']);
             $domainList = "";
             foreach($myDomains as $aDomain){
                 $domainList = $domainList." -d ".trim($aDomain);
             }
 
-            $cmd = "sh /opt/letsencrypt/letsencrypt-auto certonly --webroot -w ".$params['webroot']." --text --keep-until-expiring --agree-tos --expand --email ".$params['email']." ".$domainList." 2>&1";
+            $cmd = "sh /opt/letsencrypt/letsencrypt-auto certonly ".$testCert."--webroot -w ".$params['webroot']." --text --keep-until-expiring --agree-tos --expand --email ".$params['email']." ".$domainList." 2>&1";
 
             if (0 !== $this->exec($cmd, $output, $bgOutputFilename)) {
                 throw new OMVException(OMVErrorMsg::E_EXEC_FAILED,
@@ -265,41 +275,45 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
             //$exception = "Success";
             $this->finalizeBgProcStatus($bgStatusFilename, $output); //$exception
 
-            //Get reference to the Certificate RPC
-            $rpcServiceMgr = &OMVRpcServiceMgr::getInstance();
-            $rpcService = $rpcServiceMgr->getService("CertificateMgmt");
+            if (false == $params['test_cert']) {
+                //Get reference to the Certificate RPC
+                $rpcServiceMgr = &OMVRpcServiceMgr::getInstance();
+                $rpcService = $rpcServiceMgr->getService("CertificateMgmt");
 
-            if (is_uuid($params['certuuid'])) {
-                // Delete the old certificate to avoid duplicates
-                $return = $rpcService->callMethod("delete", array(
-                    "uuid" => $params['certuuid']
+                if (is_uuid($params['certuuid'])) {
+                    // Delete the old certificate to avoid duplicates
+                    $return = $rpcService->callMethod("delete", array(
+                        "uuid" => $params['certuuid']
+                    ), $context);
+                }
+
+                // Read certificate and key content
+                $keydata = file_get_contents(sprintf("/etc/letsencrypt/live/%s/privkey.pem", $myDomains[0]));
+                $crtdata = file_get_contents(sprintf("/etc/letsencrypt/live/%s/fullchain.pem", $myDomains[0]));
+
+                // Finally import generated certificate.
+                $return = $rpcService->callMethod("set", array(
+                    "uuid" => $GLOBALS['OMV_UUID_UNDEFINED'],
+                    "certificate" => $crtdata,
+                    "privatekey" => $keydata,
+                    "comment" => "LetsEncrypt - ".$myDomains[0]
                 ), $context);
+
+
+                //Resave the configuration data now with a new cert uuid
+                $object = array(
+                    "enable" => boolval($params["enable"]),
+                    "test_cert" => boolval($params["test_cert"]),
+                    "domain" => $params['domain'],
+                    "email" => $params['email'],
+                    "webroot" => $params['webroot'],
+                    "certuuid" => $return['uuid'],
+                    "cron_uuid" => $params['cron_uuid']
+                );
+
+                $xmlConfig->replace($this->getXpath(), $object);
             }
 
-            // Read certificate and key content
-            $keydata = file_get_contents(sprintf("/etc/letsencrypt/live/%s/privkey.pem", $myDomains[0]));
-            $crtdata = file_get_contents(sprintf("/etc/letsencrypt/live/%s/fullchain.pem", $myDomains[0]));
-
-            // Finally import generated certificate.
-            $return = $rpcService->callMethod("set", array(
-                "uuid" => $GLOBALS['OMV_UUID_UNDEFINED'],
-                "certificate" => $crtdata,
-                "privatekey" => $keydata,
-                "comment" => "LetsEncrypt - ".$myDomains[0]
-            ), $context);
-
-
-            //Resave the configuration data now with a new cert uuid
-            $object = array(
-                "enable" => boolval($params["enable"]),
-                "domain" => $params['domain'],
-                "email" => $params['email'],
-                "webroot" => $params['webroot'],
-                "certuuid" => $return['uuid'],
-                "cron_uuid" => $params['cron_uuid']
-            );
-
-            $xmlConfig->replace($this->getXpath(), $object);
 
             exit(0);
         } catch(Exception $e) {

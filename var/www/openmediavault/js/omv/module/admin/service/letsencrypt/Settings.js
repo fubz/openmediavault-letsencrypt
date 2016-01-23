@@ -63,6 +63,15 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
                         text: _("Enable monthly update of certificate.  This will create an entry in Scheduled Jobs.")
                     }]
 				},{
+					xtype: "checkbox",
+					name: "test_cert",
+					fieldLabel: _("Test Certificate"),
+					checked: true,
+					plugins: [{
+						ptype: "fieldinfo",
+						text: _("Use this to initially setup your certificates, this will avoid rate limit errors.  Once you are satisfied with the results disable to receive working certificates.")
+					}]
+				},{
 					xtype: "textfield",
 					name: "domain",
 					fieldLabel: _("Domain"),
