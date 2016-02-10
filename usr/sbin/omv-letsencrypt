@@ -55,7 +55,7 @@ privkey=`cat $live_dir/privkey.pem`
 privkey=$(json_escape "${privkey}")
 
 #Use the existing certuuid
-rpcparams={"\"uuid\":\"$certuuid\", \"certificate\":${certkey}, \"privatekey\":${privkey}, \"comment\":\"$comment\"${comment}"}
+rpcparams={"\"uuid\":\"$certuuid\", \"certificate\":${certkey}, \"privatekey\":${privkey}, \"comment\":\"${comment}\""}
 
 #This call will be invalid for some reason; however it calls, omv-rpc, so I will just go with that
 #omv_exec_rpc "CertificateMgmt" "set" "${rpcparams}"
