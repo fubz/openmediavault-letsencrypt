@@ -56,7 +56,7 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 				items: [{
 					xtype: "checkbox",
 					name: "enable",
-					fieldLabel: _("Enable"),
+					fieldLabel: _("Schedule Refresh"),
 					checked: false,
                     plugins: [{
                         ptype: "fieldinfo",
