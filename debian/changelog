@@ -2,6 +2,7 @@ openmediavault-letsencrypt (2.4) stable; urgency=low
 
   * Integrated log with OMV
   * Fixed bug in system script omv-letsencrypt
+  * Fixed duplicate crons being created
 
  -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Sat, 23 Jan 2016 15:28:13 +0100
 

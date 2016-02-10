@@ -66,10 +66,11 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 					xtype: "checkbox",
 					name: "test_cert",
 					fieldLabel: _("Test Certificate"),
+					enable: false,
 					checked: true,
 					plugins: [{
 						ptype: "fieldinfo",
-						text: _("Use this to initially setup your certificates, this will avoid rate limit errors.  Once you are satisfied with the results disable to receive working certificates.")
+						text: _("Do not enable until first certificate has been successfully generated. Once you have a certificate use this to avoid rate limit errors.")
 					}]
 				},{
 					xtype: "textfield",
@@ -115,8 +116,8 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 			items: [{
 				border: false,
 				html: "<br><ul><li>Plugin uses <a href='https://letsencrypt.readthedocs.org/en/latest/using.html#webroot'>the webroot installation</a> method provided by Let's Encrypt.</li>" +
-                    "<li>OMV configuration needs to be applied after generating certificate due to the plugin adding entries to certificates and scheduled jobs." +
-                    "</li>" +
+                    "<li>OMV configuration needs to be applied after generating certificate due to the plugin adding entries to certificates and scheduled jobs.</li>" +
+				    "<li>If you generate your first certificate with the test flag enabled your certificate will have an invalid root cert from Happy Hacker.  You will need to delete your /etc/letsencrypt folder and start over.</li>" +
 					"<h2>Server Setup</h2>" +
 					"<ul><li>Port <b>80</b> must be open for Let's Encrypt to verify your domain.</li>" +
                     "<li>Since the plugin only supports one webroot, use a reverse proxy to direct all of Let's Encrypt validation calls to yourdomain.tld/.well-known/acme-challenge/* to your configured webroot.</li>" +

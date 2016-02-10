@@ -156,30 +156,50 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
         $rpcService = $rpcServiceMgr->getService("cron");
 
         if($params['enable'] && false == is_uuid($params['cron_uuid'] && false == $params['test_cert'])) {
-            $cron_minute=rand(0, 59);
-            $cron_hour=rand(0, 23);
 
-            // Finally import generated certificate.
-            $return = $rpcService->callMethod("set", array(
-                "uuid"          => $GLOBALS['OMV_UUID_UNDEFINED'],
-                "enable"        => true,
-                "execution"     => "monthly",
-                "sendemail"     => false,
-                "type"          => "userdefined",
-                "minute"        => strval($cron_minute),
-                "everynminute"  => false,
-                "hour"          => strval($cron_hour),
-                "everynhour"    => false,
-                "dayofmonth"    => "*",
-                "everyndayofmonth" => false,
-                "month"         => "*",
-                "dayofweek"     => "*",
-                "username"      => "root",
-                "command"       => "omv-letsencrypt",
-                "comment"       => "Keeps certificate generate by Lets Encrypt plugin up to date.  Do not delete here, disable from Lets Encrypt plugin."
-            ), $context);
+            //Double check for existing cron
+            $cron_exists = false;
 
-            $params['cron_uuid'] = $return['uuid'];
+            $xpath = "//system/crontab/job";
+            $objects = $xmlConfig->getList($xpath);
+            if(is_null($objects) == false) {
+                // Get cron jobs that match the given type.
+                $jobs = array();
+                foreach($objects as $objectk => $objectv) {
+                    if(strcasecmp($objectv['command'], 'omv-letsencrypt') == 0) {
+                        $cron_exists = true;
+                        $params['cron_uuid'] = $objectv['uuid'];
+                    }
+                }
+            }
+            //Finish double checking for existing cron
+
+            if($cron_exists == false) {
+                $cron_minute=rand(0, 59);
+                $cron_hour=rand(0, 23);
+
+                // Finally import generated certificate.
+                $return = $rpcService->callMethod("set", array(
+                    "uuid"          => $GLOBALS['OMV_UUID_UNDEFINED'],
+                    "enable"        => true,
+                    "execution"     => "monthly",
+                    "sendemail"     => false,
+                    "type"          => "userdefined",
+                    "minute"        => strval($cron_minute),
+                    "everynminute"  => false,
+                    "hour"          => strval($cron_hour),
+                    "everynhour"    => false,
+                    "dayofmonth"    => "*",
+                    "everyndayofmonth" => false,
+                    "month"         => "*",
+                    "dayofweek"     => "*",
+                    "username"      => "root",
+                    "command"       => "omv-letsencrypt",
+                    "comment"       => "Keeps certificate generate by Lets Encrypt plugin up to date.  Do not delete here, disable from Lets Encrypt plugin."
+                ), $context);
+
+                $params['cron_uuid'] = $return['uuid'];
+            }
         } else if (false == $params['enable'] && is_uuid($params['cron_uuid'])  ) {
             // Finally import generated certificate.
             $return = $rpcService->callMethod("delete", array(
