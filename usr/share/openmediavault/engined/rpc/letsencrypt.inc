@@ -286,8 +286,7 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
                 $domainList = $domainList." -d ".trim($aDomain);
             }
 
-            $cmd = "sh /opt/letsencrypt/letsencrypt-auto certonly ".$testCert."--webroot -w ".$params['webroot']." --text --keep-until-expiring --agree-tos --expand --email ".$params['email']." ".$domainList." 2>&1";
-
+            $cmd = "/usr/bin/certbot certonly ".$testCert."--webroot -w ".$params['webroot']." --text --keep-until-expiring --agree-tos --expand --email ".$params['email']." ".$domainList." 2>&1";
             if (0 !== $this->exec($cmd, $output, $bgOutputFilename)) {
                 throw new OMVException(OMVErrorMsg::E_EXEC_FAILED,
                     $cmd, implode("\n", $output));

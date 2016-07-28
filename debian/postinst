@@ -5,8 +5,6 @@ set -e
 . /etc/default/openmediavault
 . /usr/share/openmediavault/scripts/helper-functions
 
-PROGRAM="/opt/letsencrypt"
-
 case "$1" in
     configure)
         SERVICE_XPATH_NAME="letsencrypt"
@@ -18,19 +16,6 @@ case "$1" in
             omv_config_add_element "${SERVICE_XPATH}" "webroot" "/var/www/openmediavault/"
         fi
 
-        echo "Removing old letsencrypt files..."
-		if [ -e ${PROGRAM} ]; then
-			rm -Rf ${PROGRAM}
-			echo "...ok"
-		fi
-
-        #pip install 'requests[security]'
-#        pip install -U pip
-#        pip install -U pyopenssl ndg-httpsclient pyasn1
-
-        echo "Clone the LetsEncrypt repository"
-		git clone https://github.com/letsencrypt/letsencrypt.git ${PROGRAM}
-
         # Activate package triggers. These triggers are only set during the
         # package installation.
         dpkg-trigger update-fixperms
@@ -40,11 +25,6 @@ case "$1" in
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
-        echo "Removing old letsencrypt files..."
-		if [ -e ${PROGRAM} ]; then
-			rm -Rf ${PROGRAM}
-			echo "...ok"
-		fi
     ;;
 
     *)
