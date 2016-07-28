@@ -66,6 +66,6 @@ omv-rpc "CertificateMgmt" "set" "${rpcparams}"
 echo "Applying Configuration Changes"
 omv_exec_rpc "Config" "applyChanges" "{\"modules\":[\"certificatemgmt\"],\"force\":false}"
 omv_exec_rpc "Config" "applyChanges" "{\"modules\":[\"letsencrypt\"],\"force\":false}"
-
+omv_exec_rpc "Config" "applyChanges" "{\"modules\":[],\"force\":false}"
 
 
