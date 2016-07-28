@@ -17,12 +17,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once "openmediavault/error.inc";
-require_once "openmediavault/notify.inc";
-require_once "openmediavault/functions.inc";
-require_once "openmediavault/rpcservice.inc";
+use OMV\Config\ConfigObject;
+use OMV\Exception;
+use OMV\ErrorMsgException;
+use OMV\Engine\Notify;
+use OMV\Config\Database;
+use OMV\Config\DatabaseException;
+use OMV\Rpc\ServiceAbstract;
+use OMV\Rpc\ServiceManager;
+use OMV\Engine\Notify\Dispatcher;
 
-class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
+class OMVRpcServiceLetsEncrypt extends ServiceAbstract
 {
     /**
      * The main event message path.
@@ -30,21 +35,14 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
      * @var string
      */
     private $eventMessagePath = "org.openmediavault.services.letsencrypt";
+    private $dataModelPath = 'conf.service.letsencrypt';
 
-    /**
-     * Get the service configuration XPath.
-     *
-     * @return string
-     */
-    private function getXpath()
+    public function __construct(Database $database = null, Dispatcher $dispatcher = null)
     {
-        return "/config/services/letsencrypt";
+        $this->database = $database ?: Database::getInstance();
+        $this->dispatcher = $dispatcher ?: Dispatcher::getInstance();
     }
 
-    private function getNetworkXPath()
-    {
-        return "/config/system/network";
-    }
     /**
      * Get the name of the RPC service.
      *
@@ -74,29 +72,17 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
      * @param array $context The context of the caller.
      * @return mixed
      *
-     * @throws OMVException
+     * @throws DatabaseException
      */
     public function getSettings($params, $context)
     {
-        global $xmlConfig;
-
         // Validate the RPC caller context.
-        $this->validateMethodContext($context, array(
-            "role" => OMV_ROLE_ADMINISTRATOR
-        ));
+        $this->validateMethodContext($context, ["role" => OMV_ROLE_ADMINISTRATOR]);
 
-        // Get the configuration object.
-        $object = $xmlConfig->get($this->getXpath());
-
-        if (is_null($object)) {
-            throw new OMVException(
-                OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $this->getXpath()
-            );
-        }
+        $object=$this->database->getAssoc($this->dataModelPath);
 
         //$get system settings
-        $network = $xmlConfig->get($this->getNetworkXPath());
+        $network = $this->database->getAssoc("conf.system.network.dns");
         $settingsObject["domain"] = $network["domainname"];
 
         // Modify the result data.
@@ -121,16 +107,13 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
      * @param array $context The context of the caller.
      * @return mixed
      *
-     * @throws OMVException
+     * @throws DatabaseException
      */
     public function setSettings($params, $context)
     {
-        global $xmlConfig;
 
         // Validate the RPC caller context.
-        $this->validateMethodContext($context, array(
-            "role" => OMV_ROLE_ADMINISTRATOR
-        ));
+        $this->validateMethodContext($context, ["role" => OMV_ROLE_ADMINISTRATOR]);
 
         // Validate the parameters of the RPC service method.
         $this->validateMethodParams(
@@ -152,7 +135,7 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
 
         #If 'enable' is set, a cron job is required
         //Get reference to the Certificate RPC
-        $rpcServiceMgr = &OMVRpcServiceMgr::getInstance();
+        $rpcServiceMgr = &ServiceManager::getInstance();
         $rpcService = $rpcServiceMgr->getService("cron");
 
         if($params['enable'] && false == is_uuid($params['cron_uuid'] && false == $params['test_cert'])) {
@@ -160,18 +143,14 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
             //Double check for existing cron
             $cron_exists = false;
 
-            $xpath = "//system/crontab/job";
-            $objects = $xmlConfig->getList($xpath);
-            if(is_null($objects) == false) {
-                // Get cron jobs that match the given type.
-                $jobs = array();
-                foreach($objects as $objectk => $objectv) {
-                    if(strcasecmp($objectv['command'], 'omv-letsencrypt') == 0) {
-                        $cron_exists = true;
-                        $params['cron_uuid'] = $objectv['uuid'];
-                    }
+            $objects = $this->database->get("conf.system.cron.job");
+            foreach($objects as $objectk => $objectv) {
+                if(strcasecmp($objectv->get('command'), 'omv-letsencrypt') == 0) {
+                    $cron_exists = true;
+                    $params['cron_uuid'] = $objectv->get('uuid');
                 }
             }
+
             //Finish double checking for existing cron
 
             if($cron_exists == false) {
@@ -180,7 +159,7 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
 
                 // Finally import generated certificate.
                 $return = $rpcService->callMethod("set", array(
-                    "uuid"          => $GLOBALS['OMV_UUID_UNDEFINED'],
+                    "uuid"          => \OMV\Environment::get("OMV_CONFIGOBJECT_NEW_UUID"),
                     "enable"        => true,
                     "execution"     => "monthly",
                     "sendemail"     => false,
@@ -221,17 +200,12 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
             "cron_uuid" => $params['cron_uuid']
         );
 
-        // Set the configuration object.
-        if (false === $xmlConfig->replace($this->getXpath(), $object)) {
-            throw new OMVException(
-                OMVErrorMsg::E_CONFIG_SET_OBJECT_FAILED,
-                $this->getXpath()
-            );
-        }
+        $config = new ConfigObject($this->dataModelPath);
+        $config->setAssoc($object);
+        $this->database->set($config);
 
         // Notify configuration changes.
-        $dispatcher = &OMVNotifyDispatcher::getInstance();
-        $dispatcher->notify(
+        $this->dispatcher->notify(
             OMV_NOTIFY_MODIFY,
             $this->eventMessagePath,
             $object
@@ -242,20 +216,16 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
 
     public function generateCertificate($params, $context)
     {
-        global $xmlConfig;
-
         // Validate the RPC caller context.
-        $this->validateMethodContext($context, array(
-            "role" => OMV_ROLE_ADMINISTRATOR
-        ));
+        $this->validateMethodContext($context, ["role" => OMV_ROLE_ADMINISTRATOR]);
 
         // Check if the module is marked as dirty. This is an indication
         // that configuration has not been saved
         if ($this->isModuleDirty("letsencrypt"))
-            throw new OMVException(OMVErrorMsg::E_CONFIG_DIRTY);
+            throw new \OMV\Config\ConfigDirtyException();
 
         // Get the configuration object.
-        $params = $xmlConfig->get($this->getXpath());
+        $params = $this->database->getAssoc($this->dataModelPath);
 
 
         //Generate the letsencrypt certificates
@@ -286,20 +256,17 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
                 $domainList = $domainList." -d ".trim($aDomain);
             }
 
-            $cmd = "sh /opt/letsencrypt/letsencrypt-auto certonly ".$testCert."--webroot -w ".$params['webroot']." --text --keep-until-expiring --agree-tos --expand --email ".$params['email']." ".$domainList." 2>&1";
-
+            $cmd = "/usr/bin/certbot certonly ".$testCert."--webroot -w ".$params['webroot']." --text --keep-until-expiring --agree-tos --expand --email ".$params['email']." ".$domainList." 2>&1";
             if (0 !== $this->exec($cmd, $output, $bgOutputFilename)) {
-                throw new OMVException(OMVErrorMsg::E_EXEC_FAILED,
+                throw new ErrorMsgException(ErrorMsgException::E_EXEC_FAILED,
                     $cmd, implode("\n", $output));
             }
             //$exception = "Success";
             $this->finalizeBgProcStatus($bgStatusFilename, $output); //$exception
-
             if (false == $params['test_cert']) {
                 //Get reference to the Certificate RPC
-                $rpcServiceMgr = &OMVRpcServiceMgr::getInstance();
+                $rpcServiceMgr = &ServiceManager::getInstance();
                 $rpcService = $rpcServiceMgr->getService("CertificateMgmt");
-
                 if (is_uuid($params['certuuid'])) {
                     // Delete the old certificate to avoid duplicates
                     $return = $rpcService->callMethod("delete", array(
@@ -313,7 +280,7 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
 
                 // Finally import generated certificate.
                 $return = $rpcService->callMethod("set", array(
-                    "uuid" => $GLOBALS['OMV_UUID_UNDEFINED'],
+                    "uuid" => \OMV\Environment::get("OMV_CONFIGOBJECT_NEW_UUID"),
                     "certificate" => $crtdata,
                     "privatekey" => $keydata,
                     "comment" => "LetsEncrypt - ".$myDomains[0]
@@ -331,7 +298,9 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
                     "cron_uuid" => $params['cron_uuid']
                 );
 
-                $xmlConfig->replace($this->getXpath(), $object);
+                $config = new ConfigObject($this->dataModelPath);
+                $config->setAssoc($object);
+                $this->database->set($config);
             }
 
 
@@ -345,7 +314,4 @@ class OMVRpcServiceLetsEncrypt extends OMVRpcServiceAbstract
 
 }
 
-// Register the RPC service.
-$rpcServiceMgr = &OMVRpcServiceMgr::getInstance();
-$rpcServiceMgr->registerService(new OMVRpcServiceLetsEncrypt());
 

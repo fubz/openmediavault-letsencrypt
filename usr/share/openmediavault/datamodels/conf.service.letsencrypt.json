@@ -1,0 +1,39 @@
+{
+    "type": "config",
+    "title": "letsencrypt",
+    "id": "conf.service.letsencrypt",
+    "queryinfo": {
+        "xpath": "/config/services/letsencrypt",
+        "idproperty": "certuuid",
+        "iterable": false
+    },
+    "properties": {
+        "enable": {
+            "type": "boolean"
+        },
+        "test_cert": {
+            "description": "Do not enable until first certificate has been successfully generated. Once you have a certificate use this to avoid rate limit errors",
+            "type": "boolean"
+        },
+        "domain": {
+            "description": "Domains the certificate will be generated for and must point to this server, e.g yourdomain.tld, sub.afraid.org. Wildcard (*) domains are not supported. Separate multiple (sub)domains with a comma (,)",
+            "type": "string"
+        },
+        "email": {
+            "description": "Required for registration with LetsEncrypt.org. This email address can be used to recover lost certificates.",
+            "type": "string",
+            "format": "email"
+        },
+        "webroot": {
+            "description": "The root directory of the files served by your internet facing webserver",
+            "type": "string",
+            "format": "dirpath"
+        },
+        "certuuid": {
+            "type": "string"
+        },
+        "cron_uuid": {
+            "type": "string"
+        }
+    }
+}

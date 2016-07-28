@@ -45,7 +45,7 @@ echo "Generating New Certificates"
 live_dir="$live_dir/${domain%%,*}/"
 echo "Getting certificates from ${live_dir}"
 
-sh /opt/letsencrypt/letsencrypt-auto certonly --webroot -w ${webroot} --text --keep-until-expiring --agree-tos --expand --email ${email} -d ${domain//,/ -d }
+/usr/bin/certbot certonly --webroot -w ${webroot} --text --keep-until-expiring --agree-tos --expand --email ${email} -d ${domain//,/ -d }
 
 #Read in the new certificates
 certkey=`cat $live_dir/fullchain.pem`
@@ -66,6 +66,6 @@ omv-rpc "CertificateMgmt" "set" "${rpcparams}"
 echo "Applying Configuration Changes"
 omv_exec_rpc "Config" "applyChanges" "{\"modules\":[\"certificatemgmt\"],\"force\":false}"
 omv_exec_rpc "Config" "applyChanges" "{\"modules\":[\"letsencrypt\"],\"force\":false}"
-
+omv_exec_rpc "Config" "applyChanges" "{\"modules\":[],\"force\":false}"
 
 
