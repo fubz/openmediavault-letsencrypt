@@ -19,6 +19,8 @@
  * along with OpenMediaVault. If not, see <http://www.gnu.org/licenses/>.
  */
 
+// require("js/omv/module/admin/diagnostic/log/plugin/Plugin.js")
+
 Ext.define("OMV.module.admin.diagnostic.log.plugin.LetsEncrypt", {
     extend: "OMV.module.admin.diagnostic.log.plugin.Plugin",
     alias: "omv.plugin.diagnostic.log.letsencrypt",
