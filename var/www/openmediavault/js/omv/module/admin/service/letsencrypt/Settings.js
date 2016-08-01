@@ -17,6 +17,8 @@
 
 // require("js/omv/WorkspaceManager.js")
 // require("js/omv/workspace/form/Panel.js")
+// require("js/omv/window/Execute.js")
+// require("js/omv/Rpc.js")
 
 Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
     extend: "OMV.workspace.form.Panel",
