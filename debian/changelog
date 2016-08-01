@@ -1,3 +1,9 @@
+openmediavault-letsencrypt (3.1) stable; urgency=low
+
+  * Fix requires
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Mon, 01 Aug 2016 07:00:15 -0500
+
 openmediavault-letsencrypt (3.0) stable; urgency=low
 
   * Port to OMV 3.x
