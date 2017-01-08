@@ -12,11 +12,11 @@ require_once("openmediavault/functions.inc");
     "columns"  => array(
         "ts" => array(
             "index" => 1,
-            "func"  => create_function('$v', 'return strpdate($v,"Y-m-d G:i:s,u");')
+            "func"  => create_function('$v', 'return strpdate($v . " UTC","Y-m-d G:i:s,u T");')
         ),
         "date" => array(
             "index" => 1,
-            "func"  => create_function('$v', 'return strftime("%c", strpdate($v,"Y-m-d G:i:s,u"));')
+            "func"  => create_function('$v', 'return strftime("%c", strpdate($v . " UTC","Y-m-d G:i:s,u T"));')
         ),
         "component" => 3,
         "level"     => 2,
