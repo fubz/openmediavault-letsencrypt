@@ -5,7 +5,7 @@ set -e
 . /etc/default/openmediavault
 . /usr/share/openmediavault/scripts/helper-functions
 
-OMV_LETSENCRYPT_APP_PATH="/opt/letsencrypt/"
+OMV_LETSENCRYPT_APP_PATH="/etc/letsencrypt/"
 
 case "$1" in
     purge)

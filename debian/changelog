@@ -1,6 +1,7 @@
 openmediavault-letsencrypt (3.2) stable; urgency=low
 
   * Fix datetime handling in system logs
+  * Fix certbot configuration directory
 
  -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Sun, 08 Jan 2017 11:24:00 +0900
 
