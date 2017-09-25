@@ -1,3 +1,9 @@
+openmediavault-letsencrypt (3.3) stable; urgency=low
+
+  * Add key length setting
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Mon, 25 Sep 2017 10:49:20 -0500
+
 openmediavault-letsencrypt (3.2) stable; urgency=low
 
   * Fix datetime handling in system logs

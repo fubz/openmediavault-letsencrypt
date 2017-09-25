@@ -7,21 +7,17 @@ set -e
 
 case "$1" in
     configure)
-        SERVICE_XPATH_NAME="letsencrypt"
-        SERVICE_XPATH="/config/services/${SERVICE_XPATH_NAME}"
-
-        if ! omv_config_exists "${SERVICE_XPATH}"; then
-            omv_config_add_element "/config/services" "${SERVICE_XPATH_NAME}"
-            omv_config_add_element "${SERVICE_XPATH}" "enable" "0"
-            omv_config_add_element "${SERVICE_XPATH}" "webroot" "/var/www/openmediavault/"
-        fi
-
         # Activate package triggers. These triggers are only set during the
         # package installation.
         dpkg-trigger update-fixperms
         dpkg-trigger update-locale
 
-
+        # Initialize and migrate configuration database.
+        echo "Updating configuration database ..."
+        omv-confdbadm create "conf.service.letsencrypt"
+        if [ -n "$2" ]; then
+            omv-confdbadm migrate "conf.service.letsencrypt" "${2}"
+        fi
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

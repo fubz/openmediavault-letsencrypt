@@ -1,0 +1,40 @@
+[{
+	"type": "rpc",
+	"id": "rpc.letsencrypt.setsettings",
+	"params": {
+		"type": "object",
+		"properties": {
+			"enable": {
+				"type": "boolean",
+				"required": true
+			},
+			"test_cert": {
+				"type": "boolean",
+				"required": true
+			},
+			"domain": {
+			    "type": "string",
+				"required": true
+			},
+			"email": {
+			    "type": "string",
+				"format": "email",
+				"required": true
+			},
+			"keylength": {
+				"type": "integer",
+				"minimum": 2048,
+				"maximum": 4096,
+				"required": true
+			},
+			"webroot": {
+			    "type": "string",
+				"required": true
+			},
+			"certuuid": {
+			    "type": "string",
+				"required": true
+			}
+		}
+	}
+}]

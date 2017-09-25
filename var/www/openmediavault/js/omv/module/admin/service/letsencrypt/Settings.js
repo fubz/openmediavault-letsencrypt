@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015 OpenMediaVault Plugin Developers
+ * Copyright (c) 2015-2017 OpenMediaVault Plugin Developers
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,11 +23,11 @@
 Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
     extend: "OMV.workspace.form.Panel",
 
-	requires: [
-		"OMV.Rpc",
-		"OMV.window.Execute"
-	],
-	
+    requires: [
+        "OMV.Rpc",
+        "OMV.window.Execute"
+    ],
+
     rpcService: "LetsEncrypt",
     rpcGetMethod: "getSettings",
     rpcSetMethod: "setSettings",
@@ -50,124 +50,127 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
 
     getFormItems: function() {
         return [{
-				xtype: "fieldset",
-				title: _("LetsEncrypt settings"),
-				defaults: {
-					labelSeparator: ""
-				},
-				items: [{
-					xtype: "checkbox",
-					name: "enable",
-					fieldLabel: _("Schedule Refresh"),
-					checked: false,
-                    plugins: [{
-                        ptype: "fieldinfo",
-                        text: _("Enable monthly update of certificate.  This will create an entry in Scheduled Jobs.")
-                    }]
-				},{
-					xtype: "checkbox",
-					name: "test_cert",
-					fieldLabel: _("Test Certificate"),
-					enable: false,
-					checked: true,
-					plugins: [{
-						ptype: "fieldinfo",
-						text: _("Do not enable until first certificate has been successfully generated. Once you have a certificate use this to avoid rate limit errors.")
-					}]
-				},{
-					xtype: "textfield",
-					name: "domain",
-					fieldLabel: _("Domain"),
-					allowBlank: false,
-					plugins: [{
-						ptype: "fieldinfo",
-						text: _("Domains the certificate will be generated for and must point to this server, e.g yourdomain.tld, sub.afraid.org.  Wildcard (*) domains are not supported.  Separate multiple (sub)domains with a comma (,)")
-					}]
-				},{
-					xtype: "textfield",
-					name: "email",
-					fieldLabel: _("Email"),
-					allowBlank: false,
-					vtype: "email",
-					plugins: [{
-						ptype: "fieldinfo",
-						text: _("Required for registration with LetsEncrypt.org.  This email address can be used to recover lost certificates.")
-					}]
-				},{
-					xtype: "textfield",
-					name: "webroot",
-					fieldLabel: _("WebRoot"),
-					allowBlank: false,
-					plugins: [{
-						ptype: "fieldinfo",
-						text: _("The root directory of the files served by your internet facing webserver.")
-					}]
-				},{
-					xtype: "hiddenfield",
-					name: "cron_uuid"
-				},{
-					xtype: "hiddenfield",
-					name: "certuuid"
-				}]
-			},{
-			xtype: "fieldset",
-			title: _("Tips"),
-			defaults: {
-				labelSeparator: ""
-			},
-			items: [{
-				border: false,
-				html: "<br><ul><li>Plugin uses <a href='https://letsencrypt.readthedocs.org/en/latest/using.html#webroot'>the webroot installation</a> method provided by Let's Encrypt.</li>" +
+            xtype: "fieldset",
+            title: _("LetsEncrypt settings"),
+            defaults: {
+                labelSeparator: ""
+            },
+            items: [{
+                xtype: "checkbox",
+                name: "enable",
+                fieldLabel: _("Schedule Refresh"),
+                checked: false,
+                plugins: [{
+                    ptype: "fieldinfo",
+                    text: _("Enable monthly update of certificate.  This will create a cron file in /etc/cron.d/.")
+                }]
+            },{
+                xtype: "checkbox",
+                name: "test_cert",
+                fieldLabel: _("Test Certificate"),
+                enable: false,
+                checked: true,
+                plugins: [{
+                    ptype: "fieldinfo",
+                    text: _("Do not enable until first certificate has been successfully generated. Once you have a certificate use this to avoid rate limit errors.")
+                }]
+            },{
+                xtype: "textfield",
+                name: "domain",
+                fieldLabel: _("Domain"),
+                allowBlank: false,
+                plugins: [{
+                    ptype: "fieldinfo",
+                    text: _("Domains the certificate will be generated for and must point to this server, e.g yourdomain.tld, sub.afraid.org.  Wildcard (*) domains are not supported.  Separate multiple (sub)domains with a comma (,)")
+                }]
+            },{
+                xtype: "textfield",
+                name: "email",
+                fieldLabel: _("Email"),
+                allowBlank: false,
+                vtype: "email",
+                plugins: [{
+                    ptype: "fieldinfo",
+                    text: _("Required for registration with LetsEncrypt.org.  This email address can be used to recover lost certificates.")
+                }]
+            },{
+                xtype: "combo",
+                name: "keylength",
+                fieldLabel: _("RSA Key Length"),
+                mode: "local",
+                store: new Ext.data.SimpleStore({
+                    fields: [ "value", "text" ],
+                    data: [
+                        [ 2048, _("2048") ],
+                        [ 4096, _("4096") ]
+                    ]
+                }),
+                displayField  : "text",
+                valueField    : "value",
+                allowBlank    : false,
+                editable      : false,
+                triggerAction : "all",
+                value         : 2048,
+                plugins    : [{
+                    ptype : "fieldinfo",
+                    text  : _("Longer key lengths may cause initial ssl handshake to be significantly slower on low powered systems.")
+                }]
+            },{
+                xtype: "textfield",
+                name: "webroot",
+                fieldLabel: _("WebRoot"),
+                allowBlank: false,
+                plugins: [{
+                    ptype: "fieldinfo",
+                    text: _("The root directory of the files served by your internet facing webserver.")
+                }]
+            },{
+                xtype: "hiddenfield",
+                name: "certuuid"
+            }]
+        },{
+            xtype: "fieldset",
+            title: _("Tips"),
+            defaults: {
+                labelSeparator: ""
+            },
+            items: [{
+                border: false,
+                html: "<br><ul><li>Plugin uses <a href='https://letsencrypt.readthedocs.org/en/latest/using.html#webroot'>the webroot installation</a> method provided by Let's Encrypt.</li>" +
                     "<li>OMV configuration needs to be applied after generating certificate due to the plugin adding entries to certificates and scheduled jobs.</li>" +
-				    "<li>If you generate your first certificate with the test flag enabled your certificate will have an invalid root cert from Happy Hacker.  You will need to delete your /etc/letsencrypt folder and start over.</li>" +
-					"<h2>Server Setup</h2>" +
-					"<ul><li>Port <b>80</b> must be open for Let's Encrypt to verify your domain.</li>" +
+                    "<li>If you generate your first certificate with the test flag enabled your certificate will have an invalid root cert from Happy Hacker.  You will need to delete your /etc/letsencrypt folder and start over.</li>" +
+                    "<h2>Server Setup</h2>" +
+                    "<ul><li>Port <b>80</b> must be open for Let's Encrypt to verify your domain.</li>" +
                     "<li>Since the plugin only supports one webroot, use a reverse proxy to direct all of Let's Encrypt validation calls to yourdomain.tld/.well-known/acme-challenge/* to your configured webroot.</li>" +
                     "</ul>"
-			}]
-		}
-        //    ,{
-        //    xtype: "fieldset",
-        //    title: _("Certificate Generation"),
-        //    defaults: {
-        //        labelSeparator: ""
-        //    },
-        //    items: [{
-        //        xtype   : "button",
-        //        name    : "generate",
-        //        text    : _("Generate Certificate"),
-        //        scope   : this,
-        //        handler : Ext.Function.bind(me.onGenerateButton, this),
-        //        margin  : "5 0 0 0"
-        //    }]
-        //}
-        ];
-	},
+            }]
+        }];
+    },
 
     onGenerateButton: function() {
         var me = this;
         me.doSubmit();
         var wnd = Ext.create("OMV.window.Execute", {
-            title      			: _("Generate"),
-            rpcService 			: "LetsEncrypt",
-            rpcMethod  			: "generateCertificate",
-			rpcIgnoreErrors 	: true,
-			hideStartButton 	: true,
-			hideStopButton  	: true,
-			listeners  			: {
+            title               : _("Generate"),
+            rpcService          : "LetsEncrypt",
+            rpcMethod           : "generateCertificate",
+            rpcIgnoreErrors     : true,
+            hideStartButton     : true,
+            hideStopButton      : true,
+            listeners           : {
                 scope     : me,
-				finish    : function(wnd, response) {
-					wnd.appendValue(_("Done..."));
-					wnd.setButtonDisabled("close", false);
-				},
-				exception : function(wnd, error) {
+                finish    : function(wnd, response) {
+                    wnd.appendValue(_("Done..."));
+                    wnd.setButtonDisabled("close", false);
+                },
+                exception : function(wnd, error) {
                     OMV.MessageBox.error(null, error);
                 }
             }
         });
-		wnd.setButtonDisabled("close", true);
-		wnd.show();
-		wnd.start();
+        wnd.setButtonDisabled("close", true);
+        wnd.show();
+        wnd.start();
     }
 
 });

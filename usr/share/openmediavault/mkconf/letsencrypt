@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2015 OpenMediaVault Plugin Developers
+# Copyright (c) 2015-2017 OpenMediaVault Plugin Developers
 #
 # This file is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,8 +20,22 @@ set -e
 . /etc/default/openmediavault
 . /usr/share/openmediavault/scripts/helper-functions
 
-SERVICE_XPATH=/config/services/letsencrypt
+LETSENCRYPT_CRON="/etc/cron.d/openmediavault-letsencrypt"
+XPATH="//services/letsencrypt"
 
-# Generate configuration files
+if [ -f "${LETSENCRYPT_CRON}" ]; then
+    rm -f "${LETSENCRYPT_CRON}"
+fi
+
+# Generate configuration only if the service is enabled.
+if [ "$(omv_config_get "${XPATH}/enable")" != "1" ]; then
+    exit 0
+fi
+
+# Generate cron file
+cat <<EOF > ${LETSENCRYPT_CRON}
+# this file was automatically generated
+@monthly root /usr/sbin/omv-letsencrypt >/dev/null 2>&1
+EOF
 
 exit 0
