@@ -35,7 +35,7 @@ fi
 # Generate cron file
 cat <<EOF > ${LETSENCRYPT_CRON}
 # this file was automatically generated
-@monthly root /usr/sbin/omv-letsencrypt >/dev/null 2>&1
+@monthly root omv-rpc "LetsEncrypt" "generateCertificate" "{\"command\":\"renew\"}" >/dev/null 2>&1
 EOF
 
 exit 0

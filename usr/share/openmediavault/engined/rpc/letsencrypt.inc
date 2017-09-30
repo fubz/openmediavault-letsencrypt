@@ -82,51 +82,58 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
         // Generate the letsencrypt certificates
         // Create the background process.
         return $this->execBgProc(function($bgStatusFilename, $bgOutputFilename)
-            use ($context) {
+            use ($params, $context) {
                 // Get the configuration object.
                 $db = \OMV\Config\Database::getInstance();
                 $object = $db->get('conf.service.letsencrypt');
+                $certuuid = $object->get('certuuid');
                 // execute certbot
                 $cmdArgs = [];
-                $cmdArgs[] = 'certonly';
-                // if enabled, generate test parameter
-                if (true == $object->get('test_cert')) {
-                    $cmdArgs[] = '--test-cert';
-                }
-                $cmdArgs[] = '--webroot';
-                $cmdArgs[] = sprintf('-w %s', $object->get('webroot'));
-                $cmdArgs[] = '--text';
-                $cmdArgs[] = '--keep-until-expiring';
-                $cmdArgs[] = '--agree-tos';
-                $cmdArgs[] = '--expand';
-                $cmdArgs[] = sprintf('--email %s', $object->get('email'));
-                //Generate domain parameters
-                $domains = explode(',', $object->get('domain'));
-                foreach ($domains as $domain) {
-                    $cmdArgs[] = sprintf('-d %s', trim($domain));
+                if (($params['command'] == 'renew') && (is_uuid($certuuid))) {
+                    $cmdArgs[] = 'renew';
+                } else {
+                    $cmdArgs[] = 'certonly';
+                    // if enabled, generate test parameter
+                    if (true == $object->get('test_cert')) {
+                        $cmdArgs[] = '--test-cert';
+                    }
+                    $cmdArgs[] = '--webroot';
+                    $cmdArgs[] = sprintf('-w %s', $object->get('webroot'));
+                    $cmdArgs[] = sprintf('--rsa-key-size %s', $object->get('keylength'));
+                    $cmdArgs[] = '--text';
+                    $cmdArgs[] = '--keep-until-expiring';
+                    $cmdArgs[] = '--agree-tos';
+                    $cmdArgs[] = '--allow-subset-of-names';
+                    // convert domain list to array
+                    $domains = explode(',', $object->get('domain'));
+                    $cmdArgs[] = sprintf('--cert-name %s', $domains[0]);
+                    $cmdArgs[] = sprintf('--email %s', $object->get('email'));
+                    // generate domain parameters
+                    foreach ($domains as $domain) {
+                        $cmdArgs[] = sprintf('-d %s', trim($domain));
+                    }
                 }
                 $cmd = new \OMV\System\Process('/usr/bin/certbot', $cmdArgs);
+                $cmd->setRedirect2to1(true);
                 $cmdLine = $cmd->getCommandLine();
                 $this->exec($cmdLine, $output, $bgOutputFilename);
                 // Replace cert if not testing
                 if (false == $object->get('test_cert')) {
-                    if (is_uuid($object->get('certuuid'))) {
-                        // Delete the old certificate to avoid duplicates
-                        $oldcert = OMV\Rpc\Rpc::call('CertificateMgmt', 'delete', [
-                            'uuid' => $object->get('certuuid')
-                        ], $context);
-                    }
-                    $liveDir = "/etc/letsencrypt/live";
+                    $liveDir = '/etc/letsencrypt/live';
                     $keyFile = sprintf('%s/%s/privkey.pem', $liveDir, $domains[0]);
                     $crtFile = sprintf('%s/%s/fullchain.pem', $liveDir, $domains[0]);
                     if (file_exists($keyFile) && file_exists($crtFile)) {
+                        // use OMV_CONFIGOBJECT_NEW_UUID if certuuid is not a uuid
+                        if (!is_uuid($certuuid)) {
+                            $certuuid = \OMV\Environment::get('OMV_CONFIGOBJECT_NEW_UUID');
+                        }
                         // Read certificate and key content
                         // Import generated certificate.
                         $cert = OMV\Rpc\Rpc::call('CertificateMgmt', 'set', [
-                            'uuid' => \OMV\Environment::get('OMV_CONFIGOBJECT_NEW_UUID'),
+                            'uuid' => $certuuid,
                             'certificate' => file_get_contents($crtFile),
                             'privatekey' => file_get_contents($keyFile),
-                            'comment' => sprintf('LetsEncrypt - %s', $myDomains[0])
+                            'comment' => sprintf('LetsEncrypt - %s', $domains[0])
                         ], $context);
                         if (is_uuid($cert['uuid'])) {
                             $object->set('certuuid', $cert['uuid']);
@@ -135,6 +142,11 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
                         $new = OMV\Rpc\Rpc::call('LetsEncrypt', 'setSettings',
                             $object->getAssoc(), $context
                         );
+                         // Apply changes immmediately
+                        \OMV\Rpc\Rpc::call('Config', 'applyChanges', [
+                            'modules' => [ 'certificatemgmt' ],
+                            'force' => TRUE
+                        ], $context);
                     }
                 }
                 // Create cron job if enabled

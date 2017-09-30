@@ -172,7 +172,6 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
         wnd.show();
         wnd.start();
     }
-
 });
 
 OMV.WorkspaceManager.registerPanel({
