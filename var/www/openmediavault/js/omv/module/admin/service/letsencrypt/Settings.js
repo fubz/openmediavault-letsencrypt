@@ -43,6 +43,14 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
             iconCls: Ext.baseCSSPrefix + "btn-icon-16x16",
             scope: this,
             handler: Ext.Function.bind(this.onGenerateButton, this)
+        },{
+            id: this.getId() + "-renew",
+            xtype: "button",
+            text: _("Renew Certificate"),
+            icon: "images/wrench.png",
+            iconCls: Ext.baseCSSPrefix + "btn-icon-16x16",
+            scope: this,
+            handler: Ext.Function.bind(this.onRenewButton, this)
         });
 
         return items;
@@ -105,15 +113,15 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
                         [ 4096, _("4096") ]
                     ]
                 }),
-                displayField  : "text",
-                valueField    : "value",
-                allowBlank    : false,
-                editable      : false,
-                triggerAction : "all",
-                value         : 2048,
-                plugins    : [{
-                    ptype : "fieldinfo",
-                    text  : _("Longer key lengths may cause initial ssl handshake to be significantly slower on low powered systems.")
+                displayField: "text",
+                valueField: "value",
+                allowBlank: false,
+                editable: false,
+                triggerAction: "all",
+                value: 2048,
+                plugins: [{
+                    ptype: "fieldinfo",
+                    text: _("Longer key lengths may cause initial ssl handshake to be significantly slower on low powered systems.")
                 }]
             },{
                 xtype: "textfield",
@@ -151,19 +159,48 @@ Ext.define("OMV.module.admin.service.letsencrypt.Settings", {
         var me = this;
         me.doSubmit();
         var wnd = Ext.create("OMV.window.Execute", {
-            title               : _("Generate"),
-            rpcService          : "LetsEncrypt",
-            rpcMethod           : "generateCertificate",
-            rpcIgnoreErrors     : true,
-            hideStartButton     : true,
-            hideStopButton      : true,
-            listeners           : {
-                scope     : me,
-                finish    : function(wnd, response) {
+            title: _("Generate"),
+            rpcService: "LetsEncrypt",
+            rpcMethod: "generateCertificate",
+            rpcIgnoreErrors: true,
+            hideStartButton: true,
+            hideStopButton: true,
+            listeners: {
+                scope: me,
+                finish: function(wnd, response) {
                     wnd.appendValue(_("Done..."));
                     wnd.setButtonDisabled("close", false);
                 },
-                exception : function(wnd, error) {
+                exception: function(wnd, error) {
+                    OMV.MessageBox.error(null, error);
+                }
+            }
+        });
+        wnd.setButtonDisabled("close", true);
+        wnd.show();
+        wnd.start();
+    },
+
+    onRenewButton: function() {
+        var me = this;
+        me.doSubmit();
+        var wnd = Ext.create("OMV.window.Execute", {
+            title: _("Renew"),
+            rpcService: "LetsEncrypt",
+            rpcMethod: "generateCertificate",
+            rpcParams: {
+                "command": "renew"
+            },
+            rpcIgnoreErrors: true,
+            hideStartButton: true,
+            hideStopButton: true,
+            listeners: {
+                scope: me,
+                finish: function(wnd, response) {
+                    wnd.appendValue(_("Done..."));
+                    wnd.setButtonDisabled("close", false);
+                },
+                exception: function(wnd, error) {
                     OMV.MessageBox.error(null, error);
                 }
             }
