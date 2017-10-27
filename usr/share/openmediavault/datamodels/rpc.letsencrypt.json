@@ -12,13 +12,13 @@
 				"type": "boolean",
 				"required": true
 			},
-			"domain": {
-			    "type": "string",
-				"required": true
-			},
 			"email": {
 			    "type": "string",
 				"format": "email",
+				"required": true
+			},
+			"name": {
+			    "type": "string",
 				"required": true
 			},
 			"keylength": {
@@ -27,11 +27,28 @@
 				"maximum": 4096,
 				"required": true
 			},
-			"webroot": {
+			"certuuid": {
+			    "type": "string",
+				"required": true
+			}
+		}
+	}
+},{
+	"type": "rpc",
+	"id": "rpc.letsencrypt.setdomain",
+	"params": {
+		"type": "object",
+		"properties": {
+			"uuid": {
+				"type": "string",
+				"format": "uuidv4",
+				"required": true
+			},
+			"domain": {
 			    "type": "string",
 				"required": true
 			},
-			"certuuid": {
+			"webroot": {
 			    "type": "string",
 				"required": true
 			}

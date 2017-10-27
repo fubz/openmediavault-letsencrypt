@@ -29,6 +29,12 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
     {
         $this->registerMethod('getSettings');
         $this->registerMethod('setSettings');
+
+        $this->registerMethod('getDomainList');
+        $this->registerMethod('getDomain');
+        $this->registerMethod('setDomain');
+        $this->registerMethod('deleteDomain');
+
         $this->registerMethod('generateCertificate');
     }
 
@@ -66,12 +72,74 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
         $this->validateMethodContext($context, ['role' => OMV_ROLE_ADMINISTRATOR]);
         // Validate the parameters of the RPC service method.
         $this->validateMethodParams($params, 'rpc.letsencrypt.setsettings');
+         // Remove spaces from name
+        $params['name'] = str_replace(' ', '_', $params['name']);
         // Get the existing configuration object.
         $db = \OMV\Config\Database::getInstance();
         $object = $db->get('conf.service.letsencrypt');
         $object->setAssoc($params);
         $db->set($object);
         // Return the configuration object.
+        return $object->getAssoc();
+    }
+
+    public function getDomainList($params, $context)
+    {
+        // Validate the RPC caller context.
+        $this->validateMethodContext($context, ['role' => OMV_ROLE_ADMINISTRATOR]);
+        // Validate the parameters of the RPC service method.
+        $this->validateMethodParams($params, 'rpc.common.getlist');
+        // Get the configuration object.
+        $db = \OMV\Config\Database::getInstance();
+        $objects = $db->getAssoc('conf.service.letsencrypt.domain');
+        // Filter the result.
+        return $this->applyFilter($objects, $params['start'], $params['limit'],
+            $params['sortfield'], $params['sortdir']);
+    }
+
+    public function getDomain($params, $context)
+    {
+        // Validate the RPC caller context.
+        $this->validateMethodContext($context, ['role' => OMV_ROLE_ADMINISTRATOR]);
+        // Validate the parameters of the RPC service method.
+        $this->validateMethodParams($params, 'rpc.common.objectuuid');
+        // Get the configuration object.
+        $db = \OMV\Config\Database::getInstance();
+        return $db->getAssoc('conf.service.letsencrypt.domain', $params['uuid']);
+    }
+
+    public function setDomain($params, $context)
+    {
+        // Validate the RPC caller context.
+        $this->validateMethodContext($context, ['role' => OMV_ROLE_ADMINISTRATOR]);
+        // Validate the parameters of the RPC service method.
+        $this->validateMethodParams($params, 'rpc.letsencrypt.setdomain');
+        // Prepare the configuration object.
+        $object = new \OMV\Config\ConfigObject('conf.service.letsencrypt.domain');
+        $object->setAssoc($params);
+        // Set the configuration object.
+        $isNew = $object->isNew();
+        $db = \OMV\Config\Database::getInstance();
+        if (TRUE === $isNew) {
+            // Check uniqueness - web root
+            $db->assertIsUnique($object, 'webroot');
+        }
+        $db->set($object);
+        // Return the configuration object.
+        return $object->getAssoc();
+    }
+
+    public function deleteDomain($params, $context)
+    {
+        // Validate the RPC caller context.
+        $this->validateMethodContext($context, ['role' => OMV_ROLE_ADMINISTRATOR]);
+        // Validate the parameters of the RPC service method.
+        $this->validateMethodParams($params, 'rpc.common.objectuuid');
+        // Delete the configuration object.
+        $db = \OMV\Config\Database::getInstance();
+        $object = $db->get('conf.service.letsencrypt.domain', $params['uuid']);
+        $db->delete($object);
+        // Return the deleted configuration object.
         return $object->getAssoc();
     }
 
@@ -86,6 +154,7 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
                 // Get the configuration object.
                 $db = \OMV\Config\Database::getInstance();
                 $object = $db->get('conf.service.letsencrypt');
+                $domains = $db->get('conf.service.letsencrypt.domain');
                 $certuuid = $object->get('certuuid');
                 // execute certbot
                 $cmdArgs = [];
@@ -97,20 +166,22 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
                     if (true == $object->get('test_cert')) {
                         $cmdArgs[] = '--test-cert';
                     }
-                    $cmdArgs[] = '--webroot';
-                    $cmdArgs[] = sprintf('-w %s', $object->get('webroot'));
                     $cmdArgs[] = sprintf('--rsa-key-size %s', $object->get('keylength'));
                     $cmdArgs[] = '--text';
                     $cmdArgs[] = '--keep-until-expiring';
                     $cmdArgs[] = '--agree-tos';
                     $cmdArgs[] = '--allow-subset-of-names';
-                    // convert domain list to array
-                    $domains = explode(',', $object->get('domain'));
-                    $cmdArgs[] = sprintf('--cert-name %s', $domains[0]);
+                    $cmdArgs[] = sprintf('--cert-name %s', $object->get('name'));
                     $cmdArgs[] = sprintf('--email %s', $object->get('email'));
-                    // generate domain parameters
-                    foreach ($domains as $domain) {
-                        $cmdArgs[] = sprintf('-d %s', trim($domain));
+                    $cmdArgs[] = '--webroot';
+                    foreach ($domains as $domaink => &$domainv) {
+                        $cmdArgs[] = sprintf('-w %s', $domainv->get('webroot'));
+                        // convert domain list to array
+                        $domains2 = explode(',', $domainv->get('domain'));
+                        // generate domain parameters
+                        foreach ($domains2 as $domain) {
+                            $cmdArgs[] = sprintf('-d %s', trim($domain));
+                        }
                     }
                 }
                 $cmd = new \OMV\System\Process('/usr/bin/certbot', $cmdArgs);
@@ -120,8 +191,8 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
                 // Replace cert if not testing
                 if (false == $object->get('test_cert')) {
                     $liveDir = '/etc/letsencrypt/live';
-                    $keyFile = sprintf('%s/%s/privkey.pem', $liveDir, $domains[0]);
-                    $crtFile = sprintf('%s/%s/fullchain.pem', $liveDir, $domains[0]);
+                    $keyFile = sprintf('%s/%s/privkey.pem', $liveDir, $object->get('name'));
+                    $crtFile = sprintf('%s/%s/fullchain.pem', $liveDir, $object->get('name'));
                     if (file_exists($keyFile) && file_exists($crtFile)) {
                         // use OMV_CONFIGOBJECT_NEW_UUID if certuuid is not a uuid
                         if (!is_uuid($certuuid)) {
@@ -133,7 +204,7 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
                             'uuid' => $certuuid,
                             'certificate' => file_get_contents($crtFile),
                             'privatekey' => file_get_contents($keyFile),
-                            'comment' => sprintf('LetsEncrypt - %s', $domains[0])
+                            'comment' => sprintf('LetsEncrypt - %s', $object->get('name'))
                         ], $context);
                         if (is_uuid($cert['uuid'])) {
                             $object->set('certuuid', $cert['uuid']);

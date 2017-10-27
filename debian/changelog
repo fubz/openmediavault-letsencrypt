@@ -1,3 +1,9 @@
+openmediavault-letsencrypt (3.4) UNRELEASED; urgency=medium
+
+  * Allow multiple webroots
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Fri, 27 Oct 2017 17:28:03 -0500
+
 openmediavault-letsencrypt (3.3) stable; urgency=low
 
   * Add key length setting
