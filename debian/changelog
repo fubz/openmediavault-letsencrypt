@@ -1,3 +1,9 @@
+openmediavault-letsencrypt (3.4.2) stable; urgency=low
+
+  * Add extra options field
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Sun, 29 Oct 2017 12:52:56 -0500
+
 openmediavault-letsencrypt (3.4.1) stable; urgency=low
 
   * Show certbot command in output and execute certbot in non-

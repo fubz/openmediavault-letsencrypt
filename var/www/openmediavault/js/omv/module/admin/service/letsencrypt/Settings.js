@@ -88,6 +88,11 @@ Ext.define('OMV.module.admin.service.letsencrypt.Settings', {
                     text: _('Longer key lengths may cause initial ssl handshake to be significantly slower on low powered systems.')
                 }]
             },{
+                xtype: 'textfield',
+                name: 'extraoptions',
+                fieldLabel: _('Extra Options'),
+                allowBlank: true
+            },{
                 xtype: 'hiddenfield',
                 name: 'certuuid'
             }]

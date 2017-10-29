@@ -29,6 +29,9 @@
 			"type": "integer",
 			"default": 2048
 		},
+		"extraoptions": {
+			"type": "string"
+		},
 		"domains": {
 			"type": "object",
 			"properties": {
