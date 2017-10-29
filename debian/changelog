@@ -1,3 +1,10 @@
+openmediavault-letsencrypt (3.4.1) stable; urgency=low
+
+  * Show certbot command in output and execute certbot in non-
+    interactive mode
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Sun, 29 Oct 2017 11:03:54 -0500
+
 openmediavault-letsencrypt (3.4) stable; urgency=low
 
   * Allow multiple webroots

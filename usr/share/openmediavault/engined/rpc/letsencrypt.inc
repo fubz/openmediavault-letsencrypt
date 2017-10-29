@@ -162,6 +162,7 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
                     $cmdArgs[] = 'renew';
                 } else {
                     $cmdArgs[] = 'certonly';
+                    $cmdArgs[] = '--non-interactive';
                     // if enabled, generate test parameter
                     if (true == $object->get('test_cert')) {
                         $cmdArgs[] = '--test-cert';
@@ -187,6 +188,8 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
                 $cmd = new \OMV\System\Process('/usr/bin/certbot', $cmdArgs);
                 $cmd->setRedirect2to1(true);
                 $cmdLine = $cmd->getCommandLine();
+                $this->writeBgProcOutput($bgOutputFilename, sprintf('Command: %s', $cmdLine));
+                $this->writeBgProcOutput($bgOutputFilename, PHP_EOL.PHP_EOL);
                 $this->exec($cmdLine, $output, $bgOutputFilename);
                 // Replace cert if not testing
                 if (false == $object->get('test_cert')) {
