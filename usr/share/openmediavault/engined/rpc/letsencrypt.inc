@@ -174,7 +174,7 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
                     $cmdArgs[] = '--allow-subset-of-names';
                     $cmdArgs[] = sprintf('--cert-name %s', $object->get('name'));
                     $cmdArgs[] = sprintf('--email %s', $object->get('email'));
-                    if (!empty($object->get('extraoptions')) {
+                    if (!empty($object->get('extraoptions'))) {
                         $cmdArgs[] = escapeshellarg($object->get('extraoptions'));
                     }
                     $cmdArgs[] = '--webroot';
