@@ -104,12 +104,11 @@ Ext.define('OMV.module.admin.service.letsencrypt.Settings', {
             },
             items: [{
                 border: false,
-                html: '<br><ul><li>Plugin uses <a href="https://letsencrypt.readthedocs.org/en/latest/using.html#webroot">the webroot installation</a> method provided by Let\'s Encrypt.</li>' +
-                    '<li>OMV configuration needs to be applied after generating certificate due to the plugin adding entries to certificates and scheduled jobs.</li>' +
+                html: '<ul>' +
+                    '<li>Plugin uses the <a href="https://letsencrypt.readthedocs.org/en/latest/using.html#webroot">webroot installation</a> method provided by Let\'s Encrypt.</li>' +
+                    '<li>OMV configuration needs to be applied after generating certificate due to the plugin adding entries to certificates.</li>' +
                     '<li>If you generate your first certificate with the test flag enabled your certificate will have an invalid root cert from Happy Hacker.  You will need to delete your /etc/letsencrypt folder and start over.</li>' +
-                    '<h2>Server Setup</h2>' +
-                    '<ul><li>Port <b>80</b> must be open for Let\'s Encrypt to verify your domain.</li>' +
-                    '<li>Since the plugin only supports one webroot, use a reverse proxy to direct all of Let\'s Encrypt validation calls to yourdomain.tld/.well-known/acme-challenge/* to your configured webroot.</li>' +
+                    '<li>Port <b>80</b> must be open for Let\'s Encrypt to verify your domain.</li>' +
                     '</ul>'
             }]
         }];
