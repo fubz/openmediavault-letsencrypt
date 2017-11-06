@@ -1,3 +1,9 @@
+openmediavault-letsencrypt (3.4.4) UNRELEASED; urgency=medium
+
+  * Fix cron job permissions
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Mon, 06 Nov 2017 06:46:15 -0600
+
 openmediavault-letsencrypt (3.4.3) stable; urgency=low
 
   * Fix typo

@@ -37,5 +37,6 @@ cat <<EOF > ${LETSENCRYPT_CRON}
 # this file was automatically generated
 @monthly root omv-rpc "LetsEncrypt" "generateCertificate" "{\"command\":\"renew\"}" >/dev/null 2>&1
 EOF
+chmod 644 ${LETSENCRYPT_CRON}
 
 exit 0
