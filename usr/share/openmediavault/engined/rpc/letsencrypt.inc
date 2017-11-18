@@ -155,10 +155,23 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
                 $db = \OMV\Config\Database::getInstance();
                 $object = $db->get('conf.service.letsencrypt');
                 $domains = $db->get('conf.service.letsencrypt.domain');
-                $certuuid = $object->get('certuuid');
+                $certObjects = $db->getByFilter(
+                    'conf.system.certificate.ssl', [
+                        'operator' => 'stringEquals',
+                        'arg0' => 'uuid',
+                        'arg1' => $object->get('certuuid')
+                    ]
+                );
+                if (count($certObjects) > 0) {
+                    $certExists = true;
+                    $certuuid = $object->get('certuuid');
+                } else {
+                    $certExists = false;
+                    $certuuid = \OMV\Environment::get('OMV_CONFIGOBJECT_NEW_UUID');
+                }
                 // execute certbot
                 $cmdArgs = [];
-                if (($params['command'] == 'renew') && (is_uuid($certuuid))) {
+                if (($params['command'] == 'renew') && ($certExists == true)) {
                     $cmdArgs[] = 'renew';
                 } else {
                     $cmdArgs[] = 'certonly';
@@ -192,6 +205,10 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
                 $cmd->setRedirect2to1(true);
                 $cmdLine = $cmd->getCommandLine();
                 $this->writeBgProcOutput($bgOutputFilename, sprintf('Command: %s', $cmdLine));
+                if ($certExists == true) {
+                    $this->writeBgProcOutput($bgOutputFilename, PHP_EOL);
+                    $this->writeBgProcOutput($bgOutputFilename, sprintf('Cert exists: %s', $certExists));
+                }
                 $this->writeBgProcOutput($bgOutputFilename, PHP_EOL.PHP_EOL);
                 $this->exec($cmdLine, $output, $bgOutputFilename);
                 // Replace cert if not testing
@@ -200,10 +217,6 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
                     $keyFile = sprintf('%s/%s/privkey.pem', $liveDir, $object->get('name'));
                     $crtFile = sprintf('%s/%s/fullchain.pem', $liveDir, $object->get('name'));
                     if (file_exists($keyFile) && file_exists($crtFile)) {
-                        // use OMV_CONFIGOBJECT_NEW_UUID if certuuid is not a uuid
-                        if (!is_uuid($certuuid)) {
-                            $certuuid = \OMV\Environment::get('OMV_CONFIGOBJECT_NEW_UUID');
-                        }
                         // Read certificate and key content
                         // Import generated certificate.
                         $cert = OMV\Rpc\Rpc::call('CertificateMgmt', 'set', [
