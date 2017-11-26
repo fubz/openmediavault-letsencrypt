@@ -1,0 +1,126 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the openmediavault-letsencrypt package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: openmediavault-letsencrypt\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-11-26 10:06-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language-Team: Swedish (https://www.transifex.com/openmediavault-plugin-developers/teams/1854/sv/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: sv\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "2048"
+msgstr ""
+
+msgid "4096"
+msgstr ""
+
+msgid "Add domain"
+msgstr ""
+
+msgid "Certificate"
+msgstr ""
+
+msgid "Certificate Name"
+msgstr ""
+
+msgid "Component"
+msgstr ""
+
+msgid "Date & Time"
+msgstr ""
+
+msgid ""
+"Do not enable until first certificate has been successfully generated. Once "
+"you have a certificate use this to avoid rate limit errors."
+msgstr ""
+
+msgid "Domain(s)"
+msgstr ""
+
+msgid "Domains"
+msgstr ""
+
+msgid ""
+"Domains the certificate will be generated for and must point to this server,"
+" e.g yourdomain.tld, sub.afraid.org.  Wildcard (*) domains are not "
+"supported.  Separate multiple (sub)domains with a comma (,)"
+msgstr ""
+
+msgid "Done..."
+msgstr ""
+
+msgid "Edit domain"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid ""
+"Enable monthly update of certificate.  This will create a cron file in "
+"/etc/cron.d/."
+msgstr ""
+
+msgid "Extra Options"
+msgstr ""
+
+msgid "Generate"
+msgstr ""
+
+msgid "Let's Encrypt"
+msgstr ""
+
+msgid "LetsEncrypt"
+msgstr ""
+
+msgid "LetsEncrypt settings"
+msgstr ""
+
+msgid "Level"
+msgstr ""
+
+msgid ""
+"Longer key lengths may cause initial ssl handshake to be significantly "
+"slower on low powered systems."
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "RSA Key Length"
+msgstr ""
+
+msgid "Renew"
+msgstr ""
+
+msgid ""
+"Required for registration with LetsEncrypt.org.  This email address can be "
+"used to recover lost certificates."
+msgstr ""
+
+msgid "Schedule Refresh"
+msgstr ""
+
+msgid "Settings"
+msgstr ""
+
+msgid "Test Certificate"
+msgstr ""
+
+msgid ""
+"The root directory of the files served by your internet facing webserver."
+msgstr ""
+
+msgid "Tips"
+msgstr ""
+
+msgid "Web root"
+msgstr ""
