@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// require('js/omv/WorkspaceManager.js')
-// require('js/omv/workspace/form/Panel.js')
-// require('js/omv/Rpc.js')
+// require("js/omv/WorkspaceManager.js")
+// require("js/omv/workspace/form/Panel.js")
+// require("js/omv/Rpc.js")
 
 Ext.define('OMV.module.admin.service.letsencrypt.Settings', {
     extend: 'OMV.workspace.form.Panel',

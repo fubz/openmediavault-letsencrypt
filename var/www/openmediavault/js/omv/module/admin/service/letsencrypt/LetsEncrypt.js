@@ -18,9 +18,9 @@
 // require("js/omv/WorkspaceManager.js")
 
 OMV.WorkspaceManager.registerNode({
-    id: "letsencrypt",
-    path: "/service",
-    text: _("LetsEncrypt"),
-    icon16: "images/letsencrypt.png",
-    iconSvg: "images/letsencrypt_grey.svg"
+    id: 'letsencrypt',
+    path: '/service',
+    text: _('LetsEncrypt'),
+    icon16: 'images/letsencrypt.png',
+    iconSvg: 'images/letsencrypt_grey.svg'
 });

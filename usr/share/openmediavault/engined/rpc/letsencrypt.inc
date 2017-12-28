@@ -223,7 +223,7 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
                             'uuid' => $certuuid,
                             'certificate' => file_get_contents($crtFile),
                             'privatekey' => file_get_contents($keyFile),
-                            'comment' => sprintf('LetsEncrypt - %s', $object->get('name'))
+                            'comment' => sprintf('LetsEncrypt - %s (%s)', $object->get('name'), date('Ymd'))
                         ], $context);
                         if (is_uuid($cert['uuid'])) {
                             $object->set('certuuid', $cert['uuid']);

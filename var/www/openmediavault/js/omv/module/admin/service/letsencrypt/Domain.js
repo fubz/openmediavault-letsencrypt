@@ -18,14 +18,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-// require('js/omv/WorkspaceManager.js')
-// require('js/omv/workspace/grid/Panel.js')
-// require('js/omv/workspace/window/Form.js')
-// require('js/omv/workspace/window/plugin/ConfigObject.js')
-// require('js/omv/Rpc.js')
-// require('js/omv/data/Store.js')
-// require('js/omv/data/Model.js')
-// require('js/omv/data/proxy/Rpc.js')
+// require("js/omv/WorkspaceManager.js")
+// require("js/omv/workspace/grid/Panel.js")
+// require("js/omv/workspace/window/Form.js")
+// require("js/omv/workspace/window/plugin/ConfigObject.js")
+// require("js/omv/Rpc.js")
+// require("js/omv/data/Store.js")
+// require("js/omv/data/Model.js")
+// require("js/omv/data/proxy/Rpc.js")
 
 Ext.define('OMV.module.admin.service.letsencrypt.Domain', {
     extend: 'OMV.workspace.window.Form',
