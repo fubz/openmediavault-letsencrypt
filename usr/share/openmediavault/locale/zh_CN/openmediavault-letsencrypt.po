@@ -10,6 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-11-26 10:06-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: songming <by@songming.me>, 2017\n"
 "Language-Team: Chinese (China) (https://www.transifex.com/openmediavault-plugin-developers/teams/1854/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
@@ -18,25 +19,25 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 msgid "2048"
-msgstr ""
+msgstr "2048"
 
 msgid "4096"
-msgstr ""
+msgstr "4096"
 
 msgid "Add domain"
-msgstr ""
+msgstr "添加域名"
 
 msgid "Certificate"
-msgstr ""
+msgstr "证书"
 
 msgid "Certificate Name"
-msgstr ""
+msgstr "证书名"
 
 msgid "Component"
 msgstr ""
 
 msgid "Date & Time"
-msgstr ""
+msgstr "日期 & 时间"
 
 msgid ""
 "Do not enable until first certificate has been successfully generated. Once "
@@ -44,10 +45,10 @@ msgid ""
 msgstr ""
 
 msgid "Domain(s)"
-msgstr ""
+msgstr "域名"
 
 msgid "Domains"
-msgstr ""
+msgstr "域名"
 
 msgid ""
 "Domains the certificate will be generated for and must point to this server,"
@@ -59,10 +60,10 @@ msgid "Done..."
 msgstr ""
 
 msgid "Edit domain"
-msgstr ""
+msgstr "编辑域名"
 
 msgid "Email"
-msgstr ""
+msgstr "Email"
 
 msgid ""
 "Enable monthly update of certificate.  This will create a cron file in "
@@ -70,22 +71,22 @@ msgid ""
 msgstr ""
 
 msgid "Extra Options"
-msgstr ""
+msgstr "扩展选项"
 
 msgid "Generate"
-msgstr ""
+msgstr "常规"
 
 msgid "Let's Encrypt"
-msgstr ""
+msgstr "Let's Encrypt"
 
 msgid "LetsEncrypt"
-msgstr ""
+msgstr "LetsEncrypt"
 
 msgid "LetsEncrypt settings"
-msgstr ""
+msgstr "LetsEncrypt 设置"
 
 msgid "Level"
-msgstr ""
+msgstr "级别"
 
 msgid ""
 "Longer key lengths may cause initial ssl handshake to be significantly "
@@ -93,13 +94,13 @@ msgid ""
 msgstr ""
 
 msgid "Message"
-msgstr ""
+msgstr "消息"
 
 msgid "RSA Key Length"
 msgstr ""
 
 msgid "Renew"
-msgstr ""
+msgstr "续期"
 
 msgid ""
 "Required for registration with LetsEncrypt.org.  This email address can be "
@@ -107,13 +108,13 @@ msgid ""
 msgstr ""
 
 msgid "Schedule Refresh"
-msgstr ""
+msgstr "计划更新"
 
 msgid "Settings"
-msgstr ""
+msgstr "设置"
 
 msgid "Test Certificate"
-msgstr ""
+msgstr "测试证书"
 
 msgid ""
 "The root directory of the files served by your internet facing webserver."

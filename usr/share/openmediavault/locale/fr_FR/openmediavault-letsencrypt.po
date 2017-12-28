@@ -10,6 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-11-26 10:06-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Axel Cantenys <clexanis@gmail.com>, 2017\n"
 "Language-Team: French (https://www.transifex.com/openmediavault-plugin-developers/teams/1854/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
@@ -18,109 +19,123 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 msgid "2048"
-msgstr ""
+msgstr "2048"
 
 msgid "4096"
-msgstr ""
+msgstr "4096"
 
 msgid "Add domain"
-msgstr ""
+msgstr "Ajouter un domaine"
 
 msgid "Certificate"
-msgstr ""
+msgstr "Certificat"
 
 msgid "Certificate Name"
-msgstr ""
+msgstr "Nom du certificat"
 
 msgid "Component"
-msgstr ""
+msgstr "Composant"
 
 msgid "Date & Time"
-msgstr ""
+msgstr "Date et heure"
 
 msgid ""
 "Do not enable until first certificate has been successfully generated. Once "
 "you have a certificate use this to avoid rate limit errors."
 msgstr ""
+"Ne pas activer jusqu'à ce que le premier certificat a été généré avec "
+"succès. Une fois que vous avez un certificat, utilisez-le pour éviter les "
+"erreurs de limite de débit."
 
 msgid "Domain(s)"
-msgstr ""
+msgstr "Domaines"
 
 msgid "Domains"
-msgstr ""
+msgstr "Domaines"
 
 msgid ""
 "Domains the certificate will be generated for and must point to this server,"
 " e.g yourdomain.tld, sub.afraid.org.  Wildcard (*) domains are not "
 "supported.  Separate multiple (sub)domains with a comma (,)"
 msgstr ""
+"Domaines pour lesquels le certificat sera généré et doit pointer vers ce "
+"serveur. Exemple votredomaine.tld, sub.afraid.org. Les métacaractères « * » "
+"dans les domaines ne sont pas pris en charge. Séparez plusieurs domaines, ou"
+" sous domaines avec une virgule « , »."
 
 msgid "Done..."
-msgstr ""
+msgstr "Terminé..."
 
 msgid "Edit domain"
-msgstr ""
+msgstr "Modifier un domaine"
 
 msgid "Email"
-msgstr ""
+msgstr "Mél"
 
 msgid ""
 "Enable monthly update of certificate.  This will create a cron file in "
 "/etc/cron.d/."
 msgstr ""
+"Activer la mise à jour mensuelle du certificat. Cela créera un fichier « "
+"cron » dans « /etc/cron.d/ »."
 
 msgid "Extra Options"
-msgstr ""
+msgstr "Options supplémentaires"
 
 msgid "Generate"
-msgstr ""
+msgstr "Générer"
 
 msgid "Let's Encrypt"
-msgstr ""
+msgstr "Let's Encrypt"
 
 msgid "LetsEncrypt"
-msgstr ""
+msgstr "Let's Encrypt"
 
 msgid "LetsEncrypt settings"
-msgstr ""
+msgstr "Paramètres de Let's Encrypt"
 
 msgid "Level"
-msgstr ""
+msgstr "Niveau"
 
 msgid ""
 "Longer key lengths may cause initial ssl handshake to be significantly "
 "slower on low powered systems."
 msgstr ""
+"Des longueurs de clé plus longues peuvent rendre la prise de contact SSL "
+"initiale beaucoup plus lente sur les systèmes de faible puissance."
 
 msgid "Message"
-msgstr ""
+msgstr "Message"
 
 msgid "RSA Key Length"
-msgstr ""
+msgstr "Longueur de clé « RSA »"
 
 msgid "Renew"
-msgstr ""
+msgstr "Renouveler"
 
 msgid ""
 "Required for registration with LetsEncrypt.org.  This email address can be "
 "used to recover lost certificates."
 msgstr ""
+"Requis pour l'enregistrement avec LetsEncrypt.org. Cette adresse mél peut "
+"être utilisée pour récupérer des certificats perdus."
 
 msgid "Schedule Refresh"
-msgstr ""
+msgstr "Actualisation automatisée"
 
 msgid "Settings"
-msgstr ""
+msgstr "Paramètres"
 
 msgid "Test Certificate"
-msgstr ""
+msgstr "Certificat de test"
 
 msgid ""
 "The root directory of the files served by your internet facing webserver."
 msgstr ""
+"Le répertoire racine des fichiers servis par votre serveur sur Internet."
 
 msgid "Tips"
-msgstr ""
+msgstr "Conseils"
 
 msgid "Web root"
-msgstr ""
+msgstr "Racine Web"
