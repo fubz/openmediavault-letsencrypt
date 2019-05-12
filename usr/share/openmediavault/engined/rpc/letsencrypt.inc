@@ -143,6 +143,14 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
         return $object->getAssoc();
     }
 
+    private function appendExtraArgs(&$object, &$cmdArgs)
+    {
+        if (!empty($object->get('extraoptions'))) {
+            #substr to get rid of quotes which are breaking certbot call
+            $cmdArgs[] = substr(escapeshellarg($object->get('extraoptions')), 1, -1);
+        }
+    }
+
     public function generateCertificate($params, $context)
     {
         // Validate the RPC caller context.
@@ -173,6 +181,7 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
                 $cmdArgs = [];
                 if (($params['command'] == 'renew') && ($certExists == true)) {
                     $cmdArgs[] = 'renew';
+                    $this->appendExtraArgs($object, $cmdArgs);
                 } else {
                     $cmdArgs[] = 'certonly';
                     $cmdArgs[] = '--non-interactive';
@@ -187,9 +196,7 @@ class OMVRpcServiceLetsEncrypt extends \OMV\Rpc\ServiceAbstract
                     $cmdArgs[] = '--allow-subset-of-names';
                     $cmdArgs[] = sprintf('--cert-name %s', $object->get('name'));
                     $cmdArgs[] = sprintf('--email %s', $object->get('email'));
-                    if (!empty($object->get('extraoptions'))) {
-                        $cmdArgs[] = escapeshellarg($object->get('extraoptions'));
-                    }
+                    $this->appendExtraArgs($object, $cmdArgs);
                     $cmdArgs[] = '--webroot';
                     foreach ($domains as $domaink => &$domainv) {
                         $cmdArgs[] = sprintf('-w %s', $domainv->get('webroot'));
